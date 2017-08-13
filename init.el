@@ -20,20 +20,22 @@
 
 ;; Initialize files
 ;; ------------------------------------------------------------------
+(let ((file-name-handler-alist nil))
+;; Wrap your init file inside (let ((file-name-handler-alist nil)) <init-file>)
 
 (setq gc-cons-threshold 100000000)
 ; (setq gc-cons-threshold (* 100 1024 1024))
+
+;; garbage-collect on focus-out, Emacs should feel snappier.
+(add-hook 'focus-out-hook #'garbage-collect)
+
+(setq message-log-max t)  ;; keep message buffer complete.
 
 ;; Where to find external lisp-files, for modes, etc.
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
-
-(setq message-log-max t)  ;; keep message buffer complete.
-
-;; garbage-collect on focus-out, Emacs should feel snappier.
-(add-hook 'focus-out-hook #'garbage-collect)
 
 ;; Install Packages
 ;; ------------------------------------------------------------------
@@ -1460,7 +1462,7 @@
 (message "Configuration file read to end!")
 (message (concat "/**/: emacs init time, "  ;; show the startup time.
     (substring (emacs-init-time)) "."))
-
+)
 
 ;; ==================================================================
 ;; THE END!
