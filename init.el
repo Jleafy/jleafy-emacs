@@ -1,10 +1,10 @@
 ;;; init.el --- Emacs configuration
 
 ;;; Author: Jleafy
-;;; Date: 2017-08-13
-;;; Version: 0.3.5
+;;; Date: 2017-08-14
+;;; Version: 0.3.6
 ;;; From: http://home.thep.lu.se/~karlf/emacs.html
-;;; Time-stamp: <Last changed 2017-08-013 14:34:12 by Jleafy, Jleafy>
+;;; Time-stamp: <Last changed 2017-08-14 10:36:21 by Jleafy, Jleafy>
 
 ;;; commentary:
 ;; Mimi version!
@@ -18,26 +18,71 @@
 ;; -*- emacs-lisp -*-
 (message "Reading configuration file ...")
 
-;; Initialize files
 ;; ------------------------------------------------------------------
+;; => Startup optimization
+;; ------------------------------------------------------------------
+
 (let ((file-name-handler-alist nil))
 ;; Wrap your init file inside (let ((file-name-handler-alist nil)) <init-file>)
 
+;; Garbage-collect on focus-out, Emacs should feel snappier.
 (setq gc-cons-threshold 100000000)
-; (setq gc-cons-threshold (* 100 1024 1024))
-
-;; garbage-collect on focus-out, Emacs should feel snappier.
 (add-hook 'focus-out-hook #'garbage-collect)
 
-(setq message-log-max t)  ;; keep message buffer complete.
+;; Keep message buffer complete.
+(setq message-log-max t)
 
+;; ------------------------------------------------------------------
+;; => Basic UI
+;; ------------------------------------------------------------------
+
+;; Turn off mouse interface early in startup to avoid momentary display
+(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
+(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
+
+(setq inhibit-startup-message t)   ;; hide the startup message
+(setq ring-bell-function 'ignore)  ;; forbid the ring bell
+
+;; Font
+(set-frame-font "consolas-14")
+(set-fontset-font "fontset-default"
+    'gb18030' ("Microsoft YaHei" . "unicode-bmp"))
+; (set-frame-font "-outline-Consolas-normal-normal-normal-mono-16-*-*-*-c-*-iso8859-1" nil t)
+; (set-face-attribute 'default nil :height 120)  ;; set font size
+
+;; Window Size
+; (setq initial-frame-alist '((height . 35) (width . 120)))
+; (setq default-frame-alist '((height . 35) (width . 120)))
+; (setq initial-frame-alist (quote ((fullscreen . maximized))))
+; (add-hook 'window-setup-hook 'toggle-frame-maximized t)  ;; Start fullscreen
+
+;; Theme
+; (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
+; (load-theme 'zenburn t)
+
+;; ------------------------------------------------------------------
+;; => User-Info and Path
+;; ------------------------------------------------------------------
+
+;; 设置个人信息
+
+;; Change default directory
+; (setq default-directory "~/Desktop/")
+; (setq command-line-default-directory "~/Desktop/")
+
+;; Load file and path
 ;; Where to find external lisp-files, for modes, etc.
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 (setq custom-file "~/.emacs.d/custom.el")
 (load custom-file 'noerror)
 
-;; Install Packages
+;; windows平台Emacs单实例原理、设置及右键菜单的添加
+;; "D:\Tools\emacs\bin\emacsclientw.exe" --no-wait --alternate-editor="D:\Tools\emacs\bin\runemacs.exe" "%1"
+(server-start)
+
+;; ------------------------------------------------------------------
+;; => Install Packages
 ;; ------------------------------------------------------------------
 
 ;; 1. package management
@@ -80,7 +125,6 @@
     monokai-theme
     material-theme           ; color theme
     molokai-theme            ; color theme
-    solarized-theme
 
     smex                     ; smarter "M-x"
     autopair                 ; auto compleate brackets
@@ -89,10 +133,6 @@
     flycheck                 ; check code sanity while I type
     auto-complete            ; auto-compleate
     ; company                  ; for auto-compleate variables/functions (with drop down menu)
-
-    markdown-mode            ; markdown-mode for github posts
-    pylint                   ; python check
-    auctex                   ; for latex
 
     ;; tools
     sr-speedbar              ; hanced for speedbar
@@ -107,15 +147,19 @@
 
     ; htmlize                  ; convert buffer text and decorations to HTML
     ; benchmark-init           ; keep track of where time is being spent during Emacs startup
+    ; tabbar                   ;
 
-    ; matlab-mode              ; yuck! when you must, you must
-    ; slime                    ; Superios Lisp Interaction Mode for Emacs
-
+    ;; special-mode
+    auctex                   ; for latex
+    markdown-mode            ; markdown-mode for github posts
+    pylint                   ; python check
     ; python-mode              ; (optional)
     ; elpy                     ; add the elpy package (for python)
     ; ein                      ; add the ein package (emacs ipython notebook)
     ; py-autopep8              ; add the autopep8 package (for python)
     ; jedi                     ; python auto-completion for emacs (optional)
+
+    ; slime                    ; Superios Lisp Interaction Mode for Emacs
     ))
 
 ;; Install any packages in my-requireed-packages, if they are not installed already.
@@ -144,36 +188,14 @@
 
 
 ;; ==================================================================
-;; BASIC CUSTOMIZATION
+;; GENERAL CONFIGURATION
 ;; ==================================================================
 
 ;; ------------------------------------------------------------------
-;; Path and User-Info - CONFIG
+;; => User better default
 ;; ------------------------------------------------------------------
-(setq default-directory "~/Desktop/")
-(setq command-line-default-directory "~/Desktop/")
-
-;; 设置个人信息
-
-;; windows平台Emacs单实例原理、设置及右键菜单的添加
-;; "D:\Tools\emacs\bin\emacsclientw.exe" --no-wait --alternate-editor="D:\Tools\emacs\bin\runemacs.exe" "%1"
-(server-start)
-
-;; ------------------------------------------------------------------
-;; USER BETTER DEFAULT - CONFIG
-;; ------------------------------------------------------------------
-
-;;; Initial window
-(setq inhibit-startup-message t)   ;; hide the startup message
-(setq inhibit-splash-screen t)     ;; cancel welcome page
-(setq inhibit-startup-echo-area-message t)
-(setq ring-bell-function 'ignore)  ;; forbid the ring bell
 
 ;;; Frame-layout (UI)
-(if (fboundp 'tool-bar-mode)
-  (tool-bar-mode -1))
-(if (fboundp 'set-scroll-bar-mode)
-  (set-scroll-bar-mode nil))
 (setq use-file-dialog nil)
 (setq use-dialog-box nil)
 ;; Show a marker in the left fringe for lines not in the buffer
@@ -184,21 +206,6 @@
 ; (load-theme 'solarized t)
 ; (load-theme 'molokai t)
 ; (load-theme 'material t)
-; (load "theme/twilight-theme")
-
-;;; Window Size
-; (setq initial-frame-alist '((height . 42) (width . 145)))
-; (setq default-frame-alist '((height . 40) (width . 143)))
-;; open up with full screen
-; (setq initial-frame-alist (quote ((fullscreen . maximized))))
-; (add-hook 'window-setup-hook 'toggle-frame-maximized t)  ;; Start fullscreen
-
-;;; Font
-(set-frame-font "consolas-14")
-(set-fontset-font "fontset-default"
-    'gb18030' ("Microsoft YaHei" . "unicode-bmp"))
-; (set-frame-font "-outline-Consolas-normal-normal-normal-mono-16-*-*-*-c-*-iso8859-1" nil t)
-; (set-face-attribute 'default nil :height 120)  ;; set font size
 
 ;;; Line number
 (global-linum-mode 'linum-mode)  ;; always show line numbers
@@ -282,11 +289,9 @@
     (substring (emacs-version) 0 16) ".\n"))
 
 ; (setq pop-up-frames t)          ;; each file opens in a new window
-; (setq-default line-spacing 3)   ;; 修改中文文本的行距, 3个像素
-
 
 ;; ------------------------------------------------------------------
-;; BACKUP and AUTO-SAVE - CONFIG
+;; => Backup and auto-save
 ;; ------------------------------------------------------------------
 
 ;; backup path settings
@@ -309,7 +314,7 @@
     auto-save-default nil)       ;; no auto saves to #file#
 
 ;; ------------------------------------------------------------------
-;; TIME and TIME-STAMP - CONFIG
+;; => Time and Time-stamp
 ;; ------------------------------------------------------------------
 
 ;;; Show Time on modeline
@@ -328,7 +333,7 @@
 (add-hook 'write-file-hooks 'time-stamp)  ;; update when saving
 
 ;; ------------------------------------------------------------------
-;; SOMETHING OTHERS - CONFIG
+;; => Something others
 ;; ------------------------------------------------------------------
 
 ;; 当寻找一个同名的文件，自动关联上那个文件
@@ -425,7 +430,7 @@
 (setq abbrev-file-name "~/.emacs.d/var/abbrev_defs.el")
 
 (when (file-exists-p abbrev-file-name)
-  (quietly-read-abbrev-file))           ;;  don't tell
+  (quietly-read-abbrev-file))           ;; don't tell
 ; (add-hook 'kill-emacs-hook 'write-abbrev-file)  ;; write when exiting emacs
 
 
@@ -481,7 +486,9 @@
 ;; PLUGINS: yasnippet
 ;; ------------------------------------------------------------------
 ; (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-; (add-hook 'prog-mode-hook #'yas-minor-mode)
+; (when (require 'yasnippet nil 'noerror)
+;   (yas-reload-all)
+;   (add-hook 'prog-mode-hook #'yas-minor-mode))
 (yas-global-mode 1)
 
 ;; PLUGINS: flycheck
@@ -538,42 +545,6 @@
 ;; PLUGINS: popup
 ;; ------------------------------------------------------------------
 
-;; PLUGINS: markdown-mode
-;; ------------------------------------------------------------------
-
-;; PLUGINS: matlab-mode
-;; ------------------------------------------------------------------
-; (autoload 'matlab-mode "matlab" "Enter Matlab mode." t)
-; (autoload 'matlab-shell "matlab" "Interactive Matlab mode." t)
-; (setq auto-mode-alist (cons '("\\.m\\'" . matlab-mode) auto-mode-alist))
-
-;; PLUGINS: anaconda-mode
-;; ------------------------------------------------------------------
-; (add-hook 'python-mode-hook 'anaconda-mode)
-; (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-
-; ;; PLUGINS: python IDE (elpy, ein, autopep8, pylint)
-; ;; ------------------------------------------------------------------
-; ;; install the required Python packages: pip install flake8 importmagic autopep8
-; (elpy-enable)
-; (elpy-use-ipython)
-
-; (when (require 'flycheck nil t)
-;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-;     (add-hook 'elpy-mode-hook 'flycheck-mode))
-
-; ; (require 'py-autopep8)
-; ; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-; ; (add-hook 'ein:connect-mode-hook 'ein:jedi-setup)  ;; jedi config
-; ; (setq ein:use-smartrep t)  ;; smartrep config
-
-(add-hook 'python-mode-hook 'pylint-add-menu-items)
-(add-hook 'python-mode-hook 'pylint-add-key-bindings)
-; ; (defun flymake-pylint-init ()
-; ;   (list python-python-command
-; ;         (list "-m" "pylint.lint" "-f" "parseable" buffer-file-name)))
-; ; (add-to-list 'flymake-allowed-file-name-masks
-; ;               '("\\.py\\'" flymake-pylint-init))
 
 ;; PLUGINS: ido
 ;; ------------------------------------------------------------------
@@ -591,29 +562,6 @@
   (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
   (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
 (add-hook 'ido-setup-hook 'bind-ido-keys)
-
-;; PLUGINS: org-mode
-;; ------------------------------------------------------------------
-(setq org-src-fontify-natively t)  ;; org-mode 代码高亮
-
-;; The following lines are always needed.  Choose your own keys.
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-cc" 'org-capture)
-(define-key global-map "\C-ca" 'org-agenda)
-(define-key global-map "\C-cb" 'org-iswitchb)
-
-;; 自动换行
-(add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
-
-(setq org-log-done t)
-;; replace the "..." with "…" for collapsed org-mode content
-(setq org-ellipsis "…")
-;; RET follows hyperlinks in org-mode:
-(setq org-return-follows-link t)
-
-;; Use abbrev-minor-mode with org-mode: (I have global abbrev mode now)
-; (add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
 
 ;; PLUGINS: recentf
 ;; ------------------------------------------------------------------
@@ -643,22 +591,6 @@
     try-expand-whole-kill))
 ; (setq dabbrev-case-replace nil)  ;; preserve case on expand with dabbrev
 
-;; PLUGINS: flymake
-;; ------------------------------------------------------------------
-; (autoload 'flymake-find-file-hook "flymake" "" t)
-; (add-hook 'find-file-hook 'flymake-find-file-hook)
-; (setq flymake-gui-warnings-enabled nil)
-; (setq flymake-log-level 0)
-
-;; PLUGINS: saveplace
-;; ------------------------------------------------------------------
-;; When you visit a file, point goes to the last place where it was when you previously visited the same file.
-;; Save point position between sessions.
-; (require 'saveplace)
-; (setq-default save-place t)
-; (setq save-place-file (expand-file-name "var/.saved-places" user-emacs-directory))
-; ; (setq save-place-file (concat user-emacs-directory "var/saved-places"))
-
 ;; PLUGINS: dired
 ;; ------------------------------------------------------------------
 ;; 延迟 dired load
@@ -676,6 +608,22 @@
 
 ;; allows you to copy the contents to the other window when more than two windows are available in a frame.
 (setq dired-dwin-target t)
+
+;; PLUGINS: flymake
+;; ------------------------------------------------------------------
+; (autoload 'flymake-find-file-hook "flymake" "" t)
+; (add-hook 'find-file-hook 'flymake-find-file-hook)
+; (setq flymake-gui-warnings-enabled nil)
+; (setq flymake-log-level 0)
+
+;; PLUGINS: saveplace
+;; ------------------------------------------------------------------
+;; When you visit a file, point goes to the last place where it was when you previously visited the same file.
+;; Save point position between sessions.
+; (require 'saveplace)
+; (setq-default save-place t)
+; (setq save-place-file (expand-file-name "var/.saved-places" user-emacs-directory))
+; ; (setq save-place-file (concat user-emacs-directory "var/saved-places"))
 
 
 ;; PLUGINS: sr-speedbar
@@ -719,30 +667,30 @@
 ;; ------------------------------------------------------------------
 ; (powerline-default-theme)
 
-; ;; PLUGINS: undo-tree
-; ;; ------------------------------------------------------------------
+;; PLUGINS: undo-tree
+;; ------------------------------------------------------------------
 ; (when (require 'undo-tree nil 'noerror)
 ;     (global-undo-tree-mode))
 ; ;; 使用方法：C-x u 进入 undo-tree-visualizer-mode; p n 上下移动;
 ; ;; b f 在分支左右切换; t 显示时间戳，选定需要的状态后，q 退出。
 
-; ;; PLUGINS: browse-kill-ring
-; ;; ------------------------------------------------------------------
+;; PLUGINS: browse-kill-ring
+;; ------------------------------------------------------------------
 ; ;; this makes M-y activate the kill-ring IF the previous command
 ; ;; was not a yank. (C-y (or C-v in my case))
 ; (when (require 'browse-kill-ring nil 'noerror)
 ;   (browse-kill-ring-default-keybindings)
 ;   (setq browse-kill-ring-quit-action 'save-and-restore))
 
-; ;; PLUGINS: volatile-highlights
-; ;; ------------------------------------------------------------------
+;; PLUGINS: volatile-highlights
+;; ------------------------------------------------------------------
 ; ;; Highlight the latest changes in the buffer (like text inserted from: yank, undo, etc.)
 ; ;; until the next command is run. Nice, since it lets me see exactly what was changed.
 ; (when (require 'volatile-highlights nil 'noerror)
 ;   (volatile-highlights-mode t))
 
-; ;; PLUGINS: bing-dict
-; ;; ------------------------------------------------------------------
+;; PLUGINS: bing-dict
+;; ------------------------------------------------------------------
 ; (setq bing-dict-pronunciation-style 'uk)
 ; ; (browse-url    ;; using the external browser
 ; ;  (concat "http://www.bing.com/dict/search?mkt=zh-cn&q="
@@ -793,27 +741,135 @@
 
 ; (setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups)
 
-;; PLUGINS: powershell
-;; ------------------------------------------------------------------
-; (setq explicit-shell-file-name “c:\\windows\\system32\\WindowsPowerShell\\v1.0\\powershell.exe”)
-; (setq explicit-powershell.exe-args ‘(“-Command” “-” ))  ;; interactive, but no command prompt
-; (autoload 'powershell "powershell" "Run powershell as a shell within emacs." t)
-; (put 'dired-find-alternate-file 'disabled nil)
-; ;; add the dir to load path
-; (add-to-list 'load-path "~/.emacs.d/lisp/")
-; ;; autoload powershell interactive shell
-; (autoload 'powershell "powershell" "Start a interactive shell of PowerShell." t)
-; ;; powershell-mode
-; (autoload 'powershell-mode "powershell-mode" "A editing mode for Microsoft PowerShell." t)
-; (add-to-list 'auto-mode-alist '("\\.ps1\\'" . powershell-mode)) ; PowerShell script
-
 
 ;; ==================================================================
 ;; SPECIAL MODE
 ;; ==================================================================
 
 ;; ------------------------------------------------------------------
-;; * C++ Mode *
+;; => Text Mode
+;; ------------------------------------------------------------------
+
+;; Line breaks / long lines
+(defvar soft-line-breaks-p nil   ; nil or t
+  "Use hard or soft line breaks for long lines.")
+
+;; M-q doesn't insert double space after period.
+(setq sentence-end-double-space nil)
+
+(if soft-line-breaks-p
+    (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
+  (add-hook 'text-mode-hook
+            '(lambda ()
+               (set-fill-column 78)       ; lines are 78 chars long ...
+               (auto-fill-mode t))))      ; ...and wrapped around automagically
+
+;; ------------------------------------------------------------------
+;; => LaTeX Mode (auctex)
+;; ------------------------------------------------------------------
+
+;; 1. Miscellaneous
+;; choose one, for what happens with long lines:
+; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+; (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
+
+(add-hook 'LaTeX-mode-hook
+  '(lambda ()
+    (ispell-change-dictionary "american" nil)
+    ;; Make equations into images & show in emacs:
+    (autoload 'latex-math-preview-expression "latex-math-preview" nil t)
+    (autoload 'latex-math-preview-save-image-file "latex-math-preview" nil t)
+    (autoload 'latex-math-preview-beamer-frame "latex-math-preview" nil t)))
+
+(setq font-latex-fontify-script nil ;; Don't fontify sub/super: _ ^
+  TeX-auto-save t                 ;; enable parse on save
+  TeX-parse-self t                ;; enable parse on load
+  TeX-auto-untabify t             ;; remove Tabs at save
+  ispell-check-comments nil)      ;; don't spell check comments
+
+;; Auto choose Swedish if usepackage{babel}[swedish]
+;; so that:  Shift+2-> '' rather than ", or similar...
+(add-hook 'TeX-language-sv-hook
+  (lambda() (ispell-change-dictionary "svenska")))
+
+;; 2. Math-$$-matchning
+(setq LaTeX-mode-hook'
+  (lambda () (defun TeX-insert-dollar ()
+    "custom redefined insert-dollar"
+    (interactive)
+    (insert "$$")           ;; in LaTeX mode, typing "$" automatically
+    (backward-char 1))))    ;; insert "$$" and move back one char.
+
+;; 3. RefTeX awesomeness
+;; Navigate sections by right mouse button. Similar to as C-c =
+(add-hook 'reftex-load-hook 'imenu-add-menubar-index)
+(add-hook 'reftex-mode-hook 'imenu-add-menubar-index)
+
+(add-hook 'LaTeX-mode-hook 'turn-on-reftex)            ;; with AUCTeX LaTeX mode
+
+(autoload 'reftex-mode    "reftex" "RefTeX Minor Mode" t)
+(autoload 'turn-on-reftex "reftex" "RefTeX Minor Mode" t)
+
+;; To integrate RefTex even closer with AUCTeX.  E.g: when C-c C-s
+;; or C-c C-e is called, AUCTex will call RefTeX, which will insert
+;; a label automatically instead of having AUCTeX ask you for one;
+;; When C-c C-s AUCTeX will update section list in RefTeX; RefTeX
+;; will also tell AUCTeX about new label, citation, and index keys,
+;; and add them to completions list.
+(setq reftex-plug-into-AUCTeX t)
+
+;; Make C-u prefixed commands not re-parse entire doc.
+(setq reftex-enable-partial-scans t)
+
+;; Even with partial-scan enables, reftex must make one full scan,
+;; this saves the result to a file "*.rel"
+; (setq reftex-save-parse-info t)
+
+;; use separate buffer for selecting each label type
+; (setq reftex-use-multiple-selection-buffers t)
+
+;; ------------------------------------------------------------------
+;; => Org Mode
+;; ------------------------------------------------------------------
+
+(setq org-src-fontify-natively t)  ;; org-mode 代码高亮
+
+;; The following lines are always needed.  Choose your own keys.
+(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+(define-key global-map "\C-cl" 'org-store-link)
+(define-key global-map "\C-cc" 'org-capture)
+(define-key global-map "\C-ca" 'org-agenda)
+(define-key global-map "\C-cb" 'org-iswitchb)
+
+;; 自动换行
+(add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
+
+(setq org-log-done t)
+;; replace the "..." with "…" for collapsed org-mode content
+(setq org-ellipsis "…")
+;; RET follows hyperlinks in org-mode:
+(setq org-return-follows-link t)
+
+;; Use abbrev-minor-mode with org-mode: (I have global abbrev mode now)
+; (add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
+
+;; ------------------------------------------------------------------
+;; => Markdown Mode
+;; ------------------------------------------------------------------
+
+;; ------------------------------------------------------------------
+;; => Programming Mode
+;; ------------------------------------------------------------------
+
+;; Check syntax while typing code:
+; (add-hook 'prog-mode-hook #'flycheck-mode)
+
+(setq compilation-ask-about-save nil)  ;; don't ask me to save _all_ buffers
+(setq compilation-scroll-output 'first-error)  ;; Stop on the first error
+(setq compilation-skip-threshold 2)  ;; Don't stop on info or warnings
+
+;; ------------------------------------------------------------------
+;; => C++ Mode
 ;; ------------------------------------------------------------------
 
 ;; 1. Generic
@@ -876,24 +932,6 @@
     (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
 
 ;; ------------------------------------------------------------------
-;; * Text Mode *
-;; ------------------------------------------------------------------
-
-;; Line breaks / long lines
-(defvar soft-line-breaks-p nil   ; nil or t
-  "Use hard or soft line breaks for long lines.")
-
-;; M-q doesn't insert double space after period.
-(setq sentence-end-double-space nil)
-
-(if soft-line-breaks-p
-    (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
-  (add-hook 'text-mode-hook
-            '(lambda ()
-               (set-fill-column 78)       ; lines are 78 chars long ...
-               (auto-fill-mode t))))      ; ...and wrapped around automagically
-
-;; ------------------------------------------------------------------
 ;; * GUD Mode * (gdb debugging)
 ;; ------------------------------------------------------------------
 
@@ -917,8 +955,41 @@
   (setq gdb-many-windows t))
 
 ;; ------------------------------------------------------------------
-;; * Winner Mode *
+;; => Python Mode
 ;; ------------------------------------------------------------------
+
+;; plugin: anaconda-mode
+;; ------------------------------------------------------------------
+; (add-hook 'python-mode-hook 'anaconda-mode)
+; (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
+
+;; plugin: python IDE (elpy, ein, autopep8, pylint)
+;; ------------------------------------------------------------------
+;; install the required Python packages: pip install flake8 importmagic autopep8
+; (elpy-enable)
+; (elpy-use-ipython)
+
+; (when (require 'flycheck nil t)
+;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+;     (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+; (require 'py-autopep8)
+; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
+; (add-hook 'ein:connect-mode-hook 'ein:jedi-setup)  ;; jedi config
+; (setq ein:use-smartrep t)  ;; smartrep config
+
+(add-hook 'python-mode-hook 'pylint-add-menu-items)
+(add-hook 'python-mode-hook 'pylint-add-key-bindings)
+; (defun flymake-pylint-init ()
+;   (list python-python-command
+;         (list "-m" "pylint.lint" "-f" "parseable" buffer-file-name)))
+; (add-to-list 'flymake-allowed-file-name-masks
+;               '("\\.py\\'" flymake-pylint-init))
+
+;; ------------------------------------------------------------------
+;; => Winner Mode
+;; ------------------------------------------------------------------
+
 ;; Useful to switch between different/previous buffer-layouts, or buffer history
 ;; cycle through window layouts/contents
 ;; winner conflicts with org, use C-c left/right instead
@@ -929,8 +1000,9 @@
   (winner-mode t))
 
 ;; ------------------------------------------------------------------
-;; * ediff Mode *
+;; => Ediff Mode
 ;; ------------------------------------------------------------------
+
 ;; Don't use strange separate control-window.
 (customize-set-variable 'ediff-window-setup-function 'ediff-setup-windows-plain)
 
@@ -939,80 +1011,6 @@
 
 ;; reset the window configuration after ediff is done (winner-mode)
 ;;(add-hook 'ediff-after-quit-hook-internal 'winner-undo)
-
-;; ------------------------------------------------------------------
-;; * Programming Mode *
-;; ------------------------------------------------------------------
-;; Check syntax while typing code:
-; (add-hook 'prog-mode-hook #'flycheck-mode)
-
-(setq compilation-ask-about-save nil)  ;; don't ask me to save _all_ buffers
-(setq compilation-scroll-output 'first-error)  ;; Stop on the first error
-(setq compilation-skip-threshold 2)  ;; Don't stop on info or warnings
-
-;; ------------------------------------------------------------------
-;; * LaTeX Mode * (auctex)
-;; ------------------------------------------------------------------
-;; 1. Miscellaneous
-;; choose one, for what happens with long lines:
-; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-; (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
-
-(add-hook 'LaTeX-mode-hook
-    '(lambda ()
-        (ispell-change-dictionary "american" nil)
-        ;; Make equations into images & show in emacs:
-        (autoload 'latex-math-preview-expression "latex-math-preview" nil t)
-        (autoload 'latex-math-preview-save-image-file "latex-math-preview" nil t)
-        (autoload 'latex-math-preview-beamer-frame "latex-math-preview" nil t)))
-
-(setq font-latex-fontify-script nil ;; Don't fontify sub/super: _ ^
-      TeX-auto-save t               ;; enable parse on save
-      TeX-parse-self t              ;; enable parse on load
-      TeX-auto-untabify t           ;; remove Tabs at save
-      ispell-check-comments nil)    ;; don't spell check comments
-
-;; Auto choose Swedish if usepackage{babel}[swedish]
-;; so that:  Shift+2-> '' rather than ", or similar...
-(add-hook 'TeX-language-sv-hook
-    (lambda() (ispell-change-dictionary "svenska")))
-
-;; 2. Math-$$-matchning
-(setq LaTeX-mode-hook'
-    (lambda () (defun TeX-insert-dollar ()
-            "custom redefined insert-dollar"
-            (interactive)
-            (insert "$$")           ;; in LaTeX mode, typing "$" automatically
-            (backward-char 1))))    ;; insert "$$" and move back one char.
-
-;; 3. RefTeX awesomeness
-;; Navigate sections by right mouse button. Similar to as C-c =
-(add-hook 'reftex-load-hook 'imenu-add-menubar-index)
-(add-hook 'reftex-mode-hook 'imenu-add-menubar-index)
-
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex)            ;; with AUCTeX LaTeX mode
-
-(autoload 'reftex-mode    "reftex" "RefTeX Minor Mode" t)
-(autoload 'turn-on-reftex "reftex" "RefTeX Minor Mode" t)
-
-;; To integrate RefTex even closer with AUCTeX.  E.g: when C-c C-s
-;; or C-c C-e is called, AUCTex will call RefTeX, which will insert
-;; a label automatically instead of having AUCTeX ask you for one;
-;; When C-c C-s AUCTeX will update section list in RefTeX; RefTeX
-;; will also tell AUCTeX about new label, citation, and index keys,
-;; and add them to completions list.
-(setq reftex-plug-into-AUCTeX t)
-
-;; Make C-u prefixed commands not re-parse entire doc.
-(setq reftex-enable-partial-scans t)
-
-;; Even with partial-scan enables, reftex must make one full scan,
-;; this saves the result to a file "*.rel"
-; (setq reftex-save-parse-info t)
-
-;; use separate buffer for selecting each label type
-; (setq reftex-use-multiple-selection-buffers t)
-;; ------------------------------------------------------------------
 
 
 ;; ==================================================================
@@ -1311,8 +1309,7 @@
 ;; is where the real power is, since this lets you search all open buffers matching the
 ;; regexp you give it, and show hits in a new buffer, which behaves just like the compile buffer.
 
-; (eval-when-compile
-;   (require 'cl))
+; (eval-when-compile (require 'cl))
 
 (defun get-buffers-matching-mode (mode)
   "Return a list of buffers where their 'major-mode' is equal to MODE."
@@ -1327,8 +1324,8 @@
   "Show all lines matching REGEXP in buffers with this major mode."
   (interactive)
   (multi-occur
-   (get-buffers-matching-mode major-mode)
-   (car (occur-read-primary-args))))
+    (get-buffers-matching-mode major-mode)
+    (car (occur-read-primary-args))))
 ; (global-set-key (kbd "C-<f4>") 'multi-occur-in-this-mode)
 ;; ------------------------------------------------------------------
 
