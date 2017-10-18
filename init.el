@@ -1,242 +1,192 @@
-;;; init.el --- Emacs configuration
+;;; init.el --- My Emacs configuration
 
-;;; Author: Jleafy
-;;; Date: 2017-08-14
-;;; Version: 0.3.6
-;;; From: http://home.thep.lu.se/~karlf/emacs.html
-;;; Time-stamp: <Last changed 2017-08-14 10:36:21 by Jleafy, Jleafy>
+;; Author: Jleafy
+;; Date: 2017-10-18
+;; Version: 0.2.1
+;; From: http://home.thep.lu.se/~karlf/emacs.html
+;; Time-stamp: <Last changed 2017-10-18 9:43:17 by Jleafy, Jleafy>
 
-;;; commentary:
-;; Mimi version!
+;;; Commentary:
+;; Following lines load an Org file and build the configuration code out of it.
 
 ;;; Code:
 
-;; ==================================================================
-;; INITIALIZATION
-;; ==================================================================
 
-;; -*- emacs-lisp -*-
-(message "Reading configuration file ...")
-
-;; ------------------------------------------------------------------
-;; => Startup optimization
-;; ------------------------------------------------------------------
-
+; (let ((gc-cons-threshold most-positive-fixnum))
 (let ((file-name-handler-alist nil))
-;; Wrap your init file inside (let ((file-name-handler-alist nil)) <init-file>)
 
 ;; Garbage-collect on focus-out, Emacs should feel snappier.
-(setq gc-cons-threshold 100000000)
-(add-hook 'focus-out-hook #'garbage-collect)
+; (setq gc-cons-threshold 100000000)
+(setq gc-cons-threshold most-positive-fixnum)
 
-;; Keep message buffer complete.
-(setq message-log-max t)
+(message "Reading configuration file ...")
 
 ;; ------------------------------------------------------------------
 ;; => Basic UI
 ;; ------------------------------------------------------------------
+;; Disable menu bars, etc.
+(tool-bar-mode -1)
+(scroll-bar-mode -1)
+(tooltip-mode 0)
 
-;; Turn off mouse interface early in startup to avoid momentary display
-(if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
-
-(setq inhibit-startup-message t)   ;; hide the startup message
-(setq ring-bell-function 'ignore)  ;; forbid the ring bell
+;; Windows Size
+; (setq default-frame-alist '((height . 35) (width . 120)))
+; (setq initial-frame-alist '((height . 37) (width . 122)))
+; (setq initial-frame-alist (quote ((fullscreen . maximized))))  ;; fullscreen on Windows
 
 ;; Font
-(set-frame-font "consolas-14")
-(set-fontset-font "fontset-default"
-    'gb18030' ("Microsoft YaHei" . "unicode-bmp"))
-; (set-frame-font "-outline-Consolas-normal-normal-normal-mono-16-*-*-*-c-*-iso8859-1" nil t)
-; (set-face-attribute 'default nil :height 120)  ;; set font size
-
-;; Window Size
-; (setq initial-frame-alist '((height . 35) (width . 120)))
-; (setq default-frame-alist '((height . 35) (width . 120)))
-; (setq initial-frame-alist (quote ((fullscreen . maximized))))
-; (add-hook 'window-setup-hook 'toggle-frame-maximized t)  ;; Start fullscreen
+(when (display-graphic-p)
+  (defconst en-font-size 14)
+  (defconst en-font-list
+    '("Consolas"
+      "Courier New"
+      "DejaVu Sans Mono"
+      "Bitstream Vera Sans Mono"))
+  (defconst cn-font-size 14)
+  (defconst cn-font-list
+    '("Microsoft Yahei"
+      "WenQuanYi Micro Hei Mono"
+      "WenQuanYi Zen Hei Mono"
+      "Courier New"))
+  (defun find-font (fonts)
+    (catch 'return
+      (dolist (ft fonts)
+    (if (x-list-fonts ft)
+        (throw 'return ft)))))
+  (defun set-font (font size lang)
+    (pcase lang
+      (`en (set-default-font (format "%s-%s" font size)))
+      (`cn (set-fontset-font t 'han (format "%s-%s" font size)))
+      (lang (message "Unknow lang %s" lang))))
+  (set-font (find-font en-font-list) en-font-size 'en)
+  (set-font (find-font cn-font-list) cn-font-size 'cn))
 
 ;; Theme
-; (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
+(add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
+(load-theme 'atom-one-dark t)
+; (load-theme 'Amelie t)
+; (load-theme 'dracula t)
+; (load-theme 'idea-darkula t)
+; (load-theme 'flatland t)
+; (load-theme 'smyx t)
+; (load-theme 'seti t)
+; (load-theme 'subdued t)
+; (load-theme 'twilight t)
+; (load-theme 'tangotango t)
 ; (load-theme 'zenburn t)
 
-;; ------------------------------------------------------------------
-;; => User-Info and Path
-;; ------------------------------------------------------------------
+;; White theme
+; (load-theme 'FlatUI t)
+; (load-theme 'github t)
+; (load-theme 'github-modern t)
+; (load-theme 'material-light t)
 
-;; 设置个人信息
+; Here's list of emacs 24.3 themes.
+; (load-theme 'deeper-blue)
+; adwaita       -- white
+; dichromacy    -- white
+; whiteboard    -- white
+; deeper-blue
 
-;; Change default directory
-; (setq default-directory "~/Desktop/")
-; (setq command-line-default-directory "~/Desktop/")
-
-;; Load file and path
-;; Where to find external lisp-files, for modes, etc.
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
-
-(setq custom-file "~/.emacs.d/custom.el")
-(load custom-file 'noerror)
-
-;; windows平台Emacs单实例原理、设置及右键菜单的添加
-;; "D:\Tools\emacs\bin\emacsclientw.exe" --no-wait --alternate-editor="D:\Tools\emacs\bin\runemacs.exe" "%1"
-(server-start)
 
 ;; ------------------------------------------------------------------
-;; => Install Packages
+;; => User Info and Path
 ;; ------------------------------------------------------------------
+;; user info
+(setq user-full-name "Jleafy")
+(setq user-mail-address "jleafy@163.com")
 
-;; 1. package management
-;; ------------------------------------------------------------------
-(require 'package)
-;; Since emacs 24 there's a very neat package system.
-(when (>= emacs-major-version 24)
-  (setq package-archives '(
-    ;; mirrors in China
-    ("gnu"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
-    ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
-    ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")
+;; change default directory
+(setq default-directory "~/Desktop/")
+(setq command-line-default-directory "~/Desktop/")
 
-    ;;("gnu" . "http://elpa.gnu.org/packages/")
-    ;;("melpa" . "http://melpa.org/packages/")
-    ;;("melpa-stable" . "http://stable.melpa.org/packages/")
-    )))
-(package-initialize)
+;; load file and path
+; (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
-;; 2. pinn package source
-;; ------------------------------------------------------------------
-;; If a package is available in multiple archives, we can set which ones to use for which package.
-; (when (boundp 'package-pinned-packages)
-;   (setq package-pinned-packages
-;         '((smex               . "melpa-stable")
-;           (zenburn-theme      . "melpa-stable") ; a nice theme
-;           (anti-zenburn-theme . "melpa-stable") ; a nice theme (brighter)
-;           (zen-and-art-theme  . "marmalade")    ; a nice theme (darker)
-;           ;;(htmlize            . "marmalade")
-;           ;;(rainbow-delimiters . "melpa-stable")
-;           ;; "unstable" package
-;           ;;(icicles            . "melpa")
-;           )))
+;; Load .custom.el
+(setq-default custom-file (expand-file-name ".custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
 
-;; 3. package auto-install
-;; ------------------------------------------------------------------
-;; List of all the packages I have (want) installed.
-(setq my-requireed-packages
-  '(better-defaults
-    monokai-theme
-    material-theme           ; color theme
-    molokai-theme            ; color theme
+;; Make directory tmp
+(defvar tmp-directory (concat user-emacs-directory "tmp"))
+(if (not (file-exists-p tmp-directory))
+    (make-directory tmp-directory t))
 
-    smex                     ; smarter "M-x"
-    autopair                 ; auto compleate brackets
-    ivy                      ; similar to ido or helm
-    yasnippet                ; auto-complete templates (e.g. if, for, do ...)
-    flycheck                 ; check code sanity while I type
-    auto-complete            ; auto-compleate
-    ; company                  ; for auto-compleate variables/functions (with drop down menu)
-
-    ;; tools
-    sr-speedbar              ; hanced for speedbar
-    which-key                ; show sub-keys after a second of an unfinished key-press
-    indent-guide             ; show vertical lines to guide indentation
-    highlight-symbol         ; highlight symbol
-    ; powerline                ;
-    ; undo-tree                ; treat undo history as a tree
-    ; browse-kill-ring         ; interactively insert items from kill-ring
-    ; volatile-highlights      ; minor mode for visual feedback on some operations
-    ; bing-dict                ; brif En-Ch Bing dictionary
-
-    ; htmlize                  ; convert buffer text and decorations to HTML
-    ; benchmark-init           ; keep track of where time is being spent during Emacs startup
-    ; tabbar                   ;
-
-    ;; special-mode
-    auctex                   ; for latex
-    markdown-mode            ; markdown-mode for github posts
-    pylint                   ; python check
-    ; python-mode              ; (optional)
-    ; elpy                     ; add the elpy package (for python)
-    ; ein                      ; add the ein package (emacs ipython notebook)
-    ; py-autopep8              ; add the autopep8 package (for python)
-    ; jedi                     ; python auto-completion for emacs (optional)
-
-    ; slime                    ; Superios Lisp Interaction Mode for Emacs
-    ))
-
-;; Install any packages in my-requireed-packages, if they are not installed already.
-(let ((refreshed nil))
-  (when (not package-archive-contents)
-    (package-refresh-contents)
-    (setq refreshed t))
-  (dolist (pkg my-requireed-packages)
-    (when (and (not (package-installed-p pkg))
-               (assoc pkg package-archive-contents))
-      (unless refreshed
-        (package-refresh-contents)
-        (setq refreshed t))
-      (package-install pkg))))
-
-;; Useful for cleaning out unwanted packages.
-(defun package-list-unaccounted-packages ()
-  "Show only the packages that are installed and are not in `my-required-packages'."
-  (interactive)
-  (package-show-package-list
-    (cl-remove-if-not (lambda (x)
-      (and (not (memq x my-requireed-packages))
-            (not (package-built-in-p x))
-                (package-installed-p x)))
-      (mapcar 'car package-archive-contents))))
-
-
-;; ==================================================================
-;; GENERAL CONFIGURATION
-;; ==================================================================
 
 ;; ------------------------------------------------------------------
 ;; => User better default
 ;; ------------------------------------------------------------------
+;;; Here are what I consider better defaults as per my own experience.
+(setq-default
+  ; blink-cursor-mode 0                         ;; Disable the cursor blinking
+  ; left-margin-width 1 right-margin-width 1    ;; Add left and right margins
+  ad-redefinition-action 'accept              ;; Silence warnings for redefinition
+  column-number-mode t                        ;; Show colum number on minibuffer
+  cursor-in-non-selected-windows t            ;; Hide the cursor in inactive windows
+  cursor-type '(bar . 1)                      ;; Modify the cursor style
+  delete-by-moving-to-trash t                 ;; Delete files to trash
+  echo-keystrokes 0.3                         ;; Echo commands I haven't finished quicker than the default of 1 second
+  fill-column 80                              ;; Set width for automatic line breaks
+  help-window-select t                        ;; Focus new help windows when opened
+  indent-tabs-mode nil                        ;; Stop using tabs to indent
+  inhibit-startup-screen t                    ;; Disable start-up screen
+  kill-whole-line t                           ;; Kill whole line when used C-k at the beginning of a line
+  line-number-mode t                          ;; Show row number on minibuffer
+  mode-require-final-newline 'visit           ;; Add a newline at EOF on visit
+  mouse-avoidance-mode 'banish                ;; Avoid collision of mouse with point
+  mouse-wheel-mode t
+  mouse-yank-at-point t                       ;; Yank at point rather than pointer
+  ns-use-srgb-colorspace nil                  ;; Don't use sRGB colors
+  recenter-positions '(5 top bottom)          ;; Set re-centering positions
+  resize-mini-windows t                       ;; Allow minibuffer auto resize
+  select-enable-clipboard t                   ;; Merge system's and Emacs' clipboard
+  sentence-end-double-space nil               ;; End a sentence after a dot and a space
+  show-paren-mode t                           ;; turn on bracket match highlight
+  show-paren-style 'parenthesis
+  split-height-threshold nil                  ;; Disable vertical window splitting
+  split-width-threshold nil                   ;; Disable horizontal window splitting
+  tab-width 4                                 ;; Set width for tabs
+  window-combination-resize t                 ;; Resize windows proportionally
+  x-stretch-cursor t                          ;; Stretch cursor to the glyph width
+  message-log-max t)                          ;; Keep message buffer complete
 
-;;; Frame-layout (UI)
-(setq use-file-dialog nil)
-(setq use-dialog-box nil)
-;; Show a marker in the left fringe for lines not in the buffer
-; (setq indicate-empty-lines t)
+; (fringe-mode 0)                               ;; Hide fringes
+(delete-selection-mode)                       ;; Replace region when inserting text
+(global-hl-line-mode)                         ;; Hightlight current line
+(global-subword-mode)                         ;; Iterate through CamelCase words
+(put 'downcase-region 'disabled nil)          ;; Enable downcase-region
+(put 'upcase-region 'disabled nil)            ;; Enable upcase-region
+(auto-image-file-mode t)                      ;; Enable to open image
+(electric-indent-mode 1)                      ;; Make Return key also do indent globally
+(file-name-shadow-mode t)                     ;; Be smart about file names in mini buffer
+(global-auto-revert-mode 1)                   ;; Refresh file automatically
+(global-font-lock-mode t)                     ;; Syntax on
+(global-prettify-symbols-mode 1)              ;; Beautify display symbols(elisp), for example, "lambda" show as "λ"
+(transient-mark-mode t)                       ;; Highlight selected region
 
-;;; Theme
-(load-theme 'monokai t)
-; (load-theme 'solarized t)
-; (load-theme 'molokai t)
-; (load-theme 'material t)
-
-;;; Line number
-(global-linum-mode 'linum-mode)  ;; always show line numbers
-; (setq linum-format " %d ")      ;; set format
-
-;;; Minibuffer
-(setq column-number-mode t)   ;; show row/colum number on minibuffer
-(setq line-number-mode t)
-(setq resize-mini-windows t)  ;; 允许minibuffer自由变化其大小（指宽度）
-(file-name-shadow-mode t)     ;; be smart about file names in mini buffer
-
-;;; Title
-(setq frame-title-format "emacs@%b")  ;; 在标题栏提示当前文件名
-; (setq frame-title-format '(buffer-file-name "%f" ("%b"))) ;; titlebar =buffer unless filename
-
-;;; Cursor and Mouse
-(setq-default cursor-type 'bar)   ;; modify the cursor
-; (blink-cursor-mode 0)           ;; make cursor not blink
-(mouse-avoidance-mode 'animate)   ;; mouse keep away from cursor
-(mouse-wheel-mode t)
-(setq mouse-yank-at-point t)      ;; surport middle-wheel-key past
-(setq select-enable-clipboard t)  ;; 允许emacs和外部其他程序的粘贴
-;; make {copy, cut, paste, undo} have {C-c, C-x, C-v, C-z} keys.
-; (cua-mode 1)
-
-;;; Major mode
 (setq major-mode 'text-mode)
-; (setq-default major-mode 'org-mode)  ;; set default mode for unknown files
+(setq next-line-add-newlines nil)             ;; Don't add a newline when the cursor moved to next line
+(setq Man-notify-method 'pushy)               ;; When reading man-doc, use current buffer
+(setq font-lock-maximum-decoration t)         ;; Adds pretty colors.
+(setq read-file-name-completion-ignore-case t);; Ignore case when using completion for file names
+(setq system-uses-terminfo nil)               ;; Fix some weird color escape sequences
+; (setq use-file-dialog nil)
+; (setq use-dialog-box nil)
+; (setq pop-up-frames t)                      ;; each file opens in a new window
+; (cua-mode 1)                                ;; make {copy, cut, paste, undo} have {C-c, C-x, C-v, C-z} keys.
+
+;;; yes/no
+; (setq confirm-kill-emacs 'yes-or-no-p)        ;; Confirm before exiting Emacs
+(defalias 'yes-or-no-p 'y-or-n-p)             ;; Replace yes/no prompts with y/n
+
+;;; Line Number
+(global-linum-mode 'linum-mode)               ;; Always show line numbers
+; (setq linum-format " %d ")                    ;; set format
 
 ;;; Scroll margin
-(setq scroll-step 1 scroll-margin 3 scroll-conservatively 10000)
+(setq-default scroll-step 1 scroll-margin 3 scroll-conservatively 10000)
+(setq scroll-preserve-screen-position t)
 (setq kill-ring-max 200)
 
 ;;; Encoding UTF-8
@@ -245,79 +195,21 @@
 (setq file-name-coding-system 'gbk)
 (set-terminal-coding-system 'utf-8)
 
-;;; Highlight current line
-(when (fboundp 'global-hl-line-mode)
-    (global-hl-line-mode t))   ;; turn it on for all modes by default
-(transient-mark-mode t)        ;; 高亮显示选中的区域
-(global-font-lock-mode t)      ;; 语法高亮
+;;; Title
+(setq frame-title-format "emacs@%b")          ;; show current filename at titlebar
+; (setq frame-title-format '(buffer-file-name "%f" ("%b"))) ;; titlebar =buffer unless filename
 
-;;; Parantes-matchning
-(when (fboundp 'show-paren-mode)
-    (show-paren-mode t)       ;; turn on bracket match highlight
-    ; (electric-pair-mode 1)  ;; auto insert closing bracket
-    (setq show-paren-style 'parenthesis))
+;;; Initial Scratch Message
+(setq initial-scratch-message "")             ;; Empty the initial *scratch* buffer
+; (setq initial-scratch-message
+;   (concat ";; scratch buffer created, welcome to "
+;     (substring (emacs-version) 0 16) ".\n"))
 
-;;; Tab-width
-(setq-default tab-width 4)
-(setq-default indent-tabs-mode nil)  ;; tab改为插入空格
-; (setq tab-width 4)  ;; for current buffer only
+;;; Whitespace
+(setq-default show-trailing-whitespace t)     ;; Display trailing whitespaces
+(add-hook 'before-save-hook 'whitespace-cleanup)
 
-;;; Indent (RET)
-;; make Return key also do indent, for current buffer only
-; (electric-indent-local-mode 1)
-(electric-indent-mode 1)  ;; globally
-
-(delete-selection-mode 1)          ;; make typing delete/overwrites selected text
-
-(setq auto-image-file-mode t)      ;; enable to open image
-
-(global-auto-revert-mode 1)        ;; refresh file automatically
-
-(global-subword-mode 1)            ;; make cursor movement stop in between camelCase words
-
-(global-prettify-symbols-mode 1)   ;; 美化显示符号（elisp），比如lambda会显示为λ
-
-(setq next-line-add-newlines nil)  ;; 当指针移到另一行，不要新增这一行
-(setq-default kill-whole-line t)   ;; 在行首 C-k 时，同时删除该行
-(setq track-eol t)                 ;; 当光标在行尾上下移动的时候，始终保持在行尾
-; (setq-default require-final-newline t)  ;; Make sure there is a final newline
-
-;;; Initial scratch Message
-; (setq initial-scratch-message ";; scratch buffer created -- happy hacking.\n")
-(setq initial-scratch-message
-  (concat ";; scratch buffer created, welcome to "
-    (substring (emacs-version) 0 16) ".\n"))
-
-; (setq pop-up-frames t)          ;; each file opens in a new window
-
-;; ------------------------------------------------------------------
-;; => Backup and auto-save
-;; ------------------------------------------------------------------
-
-;; backup path settings
-(defvar backup-directory (concat user-emacs-directory "var/emacs-backup"))
-(if (not (file-exists-p backup-directory))
-    (make-directory backup-directory t))
-
-;; Sets all files to be backed up and auto saved in a single directory.
-(setq backup-directory-alist `((".*" . ,backup-directory))
-      auto-save-file-name-transforms `((".*" ,backup-directory t)))
-
-(setq make-backup-files t        ;; backup of a file the first time it is saved.
-    backup-by-copying t          ;; don't clobber symlinks
-    version-control t            ;; version numbers for backup files
-    kept-new-versions 2
-    kept-old-versions 5
-    delete-old-versions t        ;; delete excess backup files silently
-    delete-by-moving-to-trash t
-    make-backup-files nil        ;; No annoying "~file.txt"
-    auto-save-default nil)       ;; no auto saves to #file#
-
-;; ------------------------------------------------------------------
-;; => Time and Time-stamp
-;; ------------------------------------------------------------------
-
-;;; Show Time on modeline
+;;; Show-Time
 (display-time-mode t)
 (setq display-time-24hr-format t)
 (setq display-time-day-and-date t)
@@ -326,256 +218,145 @@
 ;; when there is a "Time-stamp: <>" in the first 10 lines of the file,
 ;; emacs will write time-stamp information there when saving the file.
 (setq time-stamp-active t          ;; do enable time-stamps
-      time-stamp-line-limit 10     ;; check first 10 buffer lines for Time-stamp: <>
-      ; time-stamp-warn-inactive t
-      ; time-stamp-format "%:u %02m/%02d/%04y %02H02M02S"
-      time-stamp-format "Last changed %04y-%02m-%02d %02H:%02M:%02S by %L, %u")  ;; date format
+  time-stamp-line-limit 10         ;; check first 10 buffer lines for Time-stamp: <>
+  ; time-stamp-format "%:u %02m/%02d/%04y %02H02M02S"
+  time-stamp-format "Last changed %04y-%02m-%02d %02H:%02M:%02S by %L, %u")  ;; date format
 (add-hook 'write-file-hooks 'time-stamp)  ;; update when saving
 
-;; ------------------------------------------------------------------
-;; => Something others
-;; ------------------------------------------------------------------
+;;; Uniquify Buffers
+(setq uniquify-buffer-name-style 'post-forward
+  uniquify-separator ":"
+  uniquify-after-kill-buffer-p t       ;; rename after killing uniquified
+  uniquify-ignore-buffers-re "^\\*")   ;; don't muck with special buffers
 
-;; 当寻找一个同名的文件，自动关联上那个文件
-(setq uniquify-buffer-name-style 'forward)
+;;; Save mode-line History
+(savehist-mode t)
+(setq savehist-additional-variables '(search-ring regexp-search-ring))
+(setq savehist-file (expand-file-name "tmp/.savehist" user-emacs-directory))
 
-;; 在emacs读man文档时，使用当前buffer
-(setq Man-notify-method 'pushy)
-
-;; Enable disabled command: turn on upcase/downcase region
-(put 'upcase-region 'disabled nil)    ;; same as M-u but on whole regions C-x C-u
-(put 'downcase-region 'disabled nil)  ;; same as M-l but on whole regions C-x C-l
-
-;; Whitespace cleanup before buffers are saved
-(add-hook 'before-save-hook 'whitespace-cleanup)
-
-;; Make URLs in comments/strings clickable
-(add-hook 'find-file-hooks 'goto-address-prog-mode)
-
-;; Make shell scrips executable on save. Good!
-(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
-
-;; When compiling from shell, display error result as in compilation buffer, with links to errors.
-(add-hook 'shell-mode-hook 'compilation-shell-minor-mode)
-
-;; Instead of C-u C-SPC C-u C-SPC to pop mark twice, do: C-u C-SPC C-SPC
-(setq set-mark-command-repeat-pop t)
-
-;; Bookmarks
-;; ------------------------------------------------------------------
+;;; Bookmarks
 ;; C-x r m ('make'): create a new bookmark,
 ;; C-x r b ('bookmark'): jump to an existing bookmark,
 ;; C-x r l ('list'): see the list of your bookmarks.
-(setq bookmark-default-file "~/.emacs.d/var/.bookmarks"
-      bookmark-save-flag 1)  ;; auto save changes
+(setq bookmark-save-flag 1)  ;; auto save changes
+(setq bookmark-default-file (expand-file-name "tmp/.bookmarks" user-emacs-directory))
 
-;; Save History
-;; ------------------------------------------------------------------
-;; Save mode-line history between sessions. Very good!
-(setq savehist-additional-variables    ;; Also save ...
-  '(search-ring regexp-search-ring)    ;; ... searches
-  savehist-file "~/.emacs.d/var/.savehist") ;; keep home clean
-(savehist-mode t)                      ;; do this before evaluation
+;;; Backup and Auto-save
+; (defvar backup-directory (concat user-emacs-directory "tmp/backups"))
+; (if (not (file-exists-p backup-directory))
+;     (make-directory backup-directory t))
+; ;; Sets all files to be backed up and auto saved in a single directory.
+; (setq backup-directory-alist `((".*" . ,backup-directory))
+;       auto-save-file-name-transforms `((".*" ,backup-directory t)))
+; (setq make-backup-files t          ;; backup of a file the first time it is saved.
+;       backup-by-copying t          ;; don't clobber symlinks
+;       version-control t            ;; version numbers for backup files
+;       kept-new-versions 2
+;       kept-old-versions 5
+;       delete-old-versions t        ;; delete excess backup files silently
+;       delete-by-moving-to-trash t)
+(setq make-backup-files nil)         ;; No annoying "~file.txt"
+(setq auto-save-default nil)         ;; no auto saves to #file#
 
-;; Awesome copy/paste
-;; ------------------------------------------------------------------
-;; If nothing is marked/highlighted, and you copy or cut
-;; (C-w or M-w) then use column 1 to end. No need to "C-a C-k" or "C-a C-w" etc.
-
-(defadvice kill-ring-save (before slick-copy activate compile)
-  "When called interactively with no active region, copy a single line instead."
-  (interactive
-   (if mark-active (list (region-beginning) (region-end))
-     (message "Copied line")
-     (list (line-beginning-position)
-           (line-beginning-position 2)))))
-
-(defadvice kill-region (before slick-cut activate compile)
-  "When called interactively with no active region, kill a single line instead."
-  (interactive
-    (if mark-active (list (region-beginning) (region-end))
-      (list (line-beginning-position)
-        (line-beginning-position 2)))))
-
-;; Register
-;; ------------------------------------------------------------------
-;; It's what prefixed by "C-x r". Allows storing of rectangular selections, copy, paste,
-;; multiple cut/paste, etc, and remember positions in a buffer (for that session).
-;; Set register (bookmark) with C-x r SPC [number], and jump to it with C-x r j [number].
-
-;; Recenter after jump-to-register, when jumping, put mark on top of screen, not bottom, as is default
-(defadvice jump-to-register
-  (after jump-to-register-recenter-top)
-  "Recenter point to top of window after jumping to a register."
-  (recenter 0))
-(ad-activate 'jump-to-register)
-
-;; Useful to display list of the registers
-(when (require 'list-register nil 'noerror)
-  (global-set-key (kbd "C-x r v") 'list-register))
-
-;; Uniquify buffers
-;; ------------------------------------------------------------------
-;; When several buffers have the same name, make the name uniqe by including part of path in name.
-(when (require 'uniquify nil 'noerror)  ;; make buffer names more unique
-  (setq uniquify-buffer-name-style 'post-forward
-        uniquify-separator ":"
-        uniquify-after-kill-buffer-p t       ;; rename after killing uniquified
-        uniquify-ignore-buffers-re "^\\*"))  ;; don't muck with special buffers
-
-;; abbrevs
-;; ------------------------------------------------------------------
-; (setq save-abbrevs t)                 ;; (ask) save abbrevs when files are saved
-; (setq-default abbrev-mode t)          ;; turn it on for all modes
-(setq abbrev-file-name "~/.emacs.d/var/abbrev_defs.el")
-
-(when (file-exists-p abbrev-file-name)
-  (quietly-read-abbrev-file))           ;; don't tell
+;;; Abbrevs
+; (setq save-abbrevs t)                      ;; (ask) save abbrevs when files are saved
+; (setq-default abbrev-mode t)               ;; turn it on for all modes
+; (setq abbrev-file-name (expand-file-name "tmp/.abbrev" user-emacs-directory))
+; (when (file-exists-p abbrev-file-name)
+;   (quietly-read-abbrev-file))              ;; don't tell
 ; (add-hook 'kill-emacs-hook 'write-abbrev-file)  ;; write when exiting emacs
+
+
+;; ------------------------------------------------------------------
+;; => Hook list
+;; ------------------------------------------------------------------
+;; Make URLs in comments/strings clickable
+(add-hook 'find-file-hooks 'goto-address-prog-mode)
+;; Make shell scrips executable on save. Good!
+(add-hook 'after-save-hook 'executable-make-buffer-file-executable-if-script-p)
+;; When compiling from shell, display error result as in compilation buffer, with links to errors.
+(add-hook 'shell-mode-hook 'compilation-shell-minor-mode)
+
+
+;; ==================================================================
+;; Initialization for Packages
+;; ==================================================================
+
+;; Set repositories
+(require 'package)
+(setq-default
+  load-prefer-newer t
+  package-enable-at-startup nil)
+(setq package-archives '(
+  ;; mirrors in China
+  ("gnu"   . "http://mirrors.tuna.tsinghua.edu.cn/elpa/gnu/")
+  ("melpa" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa/")
+  ("melpa-stable" . "http://mirrors.tuna.tsinghua.edu.cn/elpa/melpa-stable/")
+  ))
+(package-initialize)
+
+;; Install 'use-package' if necessary
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+;; Enable use-package
+; (eval-when-compile (require 'use-package))
+(require 'use-package)
+(require 'diminish)                ;; if you use :diminish
+(require 'bind-key)                ;; if you use any :bind variant
+
+(setq-default
+  ; use-package-verbose t
+  ; use-package-always-defer t
+  use-package-always-ensure t)
 
 
 ;; ==================================================================
 ;; PLUGINS CONFIGURATION
 ;; ==================================================================
 
-;; PLUGINS: smex
+;; molokai-theme-theme
+; (use-package molokai-theme
+;   :init
+;   (load-theme 'molokai t))
+
+;; sanityinc-tomorrow-theme
+; (use-package color-theme-sanityinc-tomorrow
+;   :init
+;   (load-theme 'sanityinc-tomorrow-night t))
+
+;; spacemacs-theme
+; (use-package spacemacs-theme
+;   :init
+;   (load-theme 'spacemacs-dark t))
+
+;; Start server
+(use-package server
+  :config
+  (unless (server-running-p)
+    (server-start)))
+
+;; Make directory server
+(defvar server-directory (concat user-emacs-directory "server"))
+(if (not (file-exists-p server-directory))
+  (make-directory server-directory t))
+
+;; Windows platform Emacs single instance settings and right-click menu added
+;; "D:\Tools\emacs\bin\emacsclientw.exe" --no-wait --alternate-editor="D:\Tools\emacs\bin\runemacs.exe" "%1"
+; (require 'server)
+; (unless (server-running-p)
+;   (server-start))
+
+
 ;; ------------------------------------------------------------------
-;; smex - a smarter M-x compleation
-(with-eval-after-load "smex"
-  (smex-initialize)
-  (global-set-key (kbd "M-x") 'smex)
-  (global-set-key (kbd "M-X") 'smex-major-mode-commands)
-  (setq smex-save-file "~/.emacs.d/var/.smex-items"))
-; (global-set-key [remap execute-extended-command] 'smex)
-
-;; PLUGINS: autopair
+;; => Built-In Packages
 ;; ------------------------------------------------------------------
-; (autoload 'autopair-global-mode "autopair" nil t)
-(when (require 'autopair nil 'noerror)
-  ;; Use paredit intead in any lsip-environment:
-  (add-hook 'emacs-lisp-mode-hook       '(lambda () (setq autopair-dont-activate t)))
-  (add-hook 'lisp-mode-hook             '(lambda () (setq autopair-dont-activate t)))
-  (add-hook 'lisp-interaction-mode-hook '(lambda () (setq autopair-dont-activate t)))
-  (add-hook 'scheme-mode-hook           '(lambda () (setq autopair-dont-activate t)))
-  (autopair-global-mode)  ;; to enable in all buffers
-  (setq autopair-blink 'nil))
-
-;; PLUGINS: ivy
-;; ------------------------------------------------------------------
-(ivy-mode 1)
-(setq ivy-use-virtual-buffers t)
-(setq enable-recursive-minibuffers t)
-
-(setq-default ivy-use-virtual-buffers t
-    ivy-count-format ""
-    ivy-initial-inputs-alist
-    '((counsel-M-x . "^")
-      (man . "^")
-      (woman . "^")))
-;; IDO-style directory navigation
-; (define-key ivy-minibuffer-map (kbd "C-j") #'ivy-immediate-done)
-; (define-key ivy-minibuffer-map (kbd "RET") #'ivy-alt-done)
-(add-hook 'after-init-hook
-    (lambda ()
-    (when (bound-and-true-p ido-ubiquitous-mode)
-        (ido-ubiquitous-mode -1))
-    (when (bound-and-true-p ido-mode)
-        (ido-mode -1))
-        (ivy-mode 1)))
-
-;; PLUGINS: yasnippet
-;; ------------------------------------------------------------------
-; (setq yas-snippet-dirs '("~/.emacs.d/snippets"))
-; (when (require 'yasnippet nil 'noerror)
-;   (yas-reload-all)
-;   (add-hook 'prog-mode-hook #'yas-minor-mode))
-(yas-global-mode 1)
-
-;; PLUGINS: flycheck
-;; ------------------------------------------------------------------
-(add-hook 'after-init-hook #'global-flycheck-mode)
-(setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
-
-;; PLUGINS: auto-complete
-;; ------------------------------------------------------------------
-(ac-config-default)
-(setq ac-dwim t)                     ;; 设置tab键的使用模式
-(setq ac-use-quick-help nil
-      ; setq ac-quick-help-delay 1.0
-      ac-auto-start 2                ;; 输入3个字符才开始补全
-      ac-auto-show-menu 0.5          ;; Show menu 0.8 second later
-      ac-menu-height 12              ;; menu设置为12 lines
-      ac-use-menu-map t)             ;; 选择菜单项的快捷键
-(setq ac-comphist-file "~/.emacs.d/var/.ac-comphist.dat")
-
-;; 将backspace的删除后仍旧可以触发ac补全
-(setq ac-trigger-commands
-    (cons 'backward-delete-char-untabify ac-trigger-commands))
-
-(define-key ac-menu-map "\C-n" 'ac-next)
-(define-key ac-menu-map "\C-p" 'ac-previous)
-; (global-set-key "\M-/" 'auto-complete)  ;; 补全的快捷键，用于需要提前补全
-(global-set-key (kbd "<C-tab>") 'auto-complete)  ;; 补全快捷键
-
-;; set face
-; (set-face-background 'ac-candidate-face "lightgray")
-; (set-face-underline 'ac-candidate-face "darkgray")
-; (set-face-background 'ac-selection-face "steelblue")
-
-;; PLUGINS: company
-;; ------------------------------------------------------------------
-; (global-company-mode t)
-; (setq company-idle-delay nil
-;       company-minimum-prefix-length 2
-;       company-require-match nil
-;       company-dabbrev-ignore-case nil
-;       company-dabbrev-downcase nil
-;       company-show-numbers t
-;       company-transformers '(company-sort-by-backend-importance)
-;       company-continue-commands '(not helm-dabbrev)
-;       )
-; ; company backends to use anaconda for python
-; ; (add-to-list 'company-backends '(company-anaconda :with company-yasnippet))
-
-; ; 补全菜单选项快捷键
-; (define-key company-active-map (kbd "C-n") 'company-select-next)
-; (define-key company-active-map (kbd "C-p") 'company-select-previous)
-; (global-set-key (kbd "<C-tab>") 'company-complete)  ;; 补全快捷键
-
-;; PLUGINS: popup
-;; ------------------------------------------------------------------
-
-
-;; PLUGINS: ido
-;; ------------------------------------------------------------------
-(ido-mode t)
-;; ido模式中不保存目录列表,解决退出Emacs时ido要询问编码的问题。
-(setq ido-save-directory-list-file nil)
-; Disable the merging (the "looking in other directories" in ido vulgo), or switch with 'C-z' manually
-(setq ido-auto-merge-work-directories-length -1)
-(setq ido-enable-flex-matching t
-      ido-everywhere t
-      ido-use-virtual-buffers t)
-
-(defun bind-ido-keys ()
-  "Keybindings for ido mode."
-  (define-key ido-completion-map (kbd "C-n") 'ido-next-match)
-  (define-key ido-completion-map (kbd "C-p") 'ido-prev-match))
-(add-hook 'ido-setup-hook 'bind-ido-keys)
-
-;; PLUGINS: recentf
-;; ------------------------------------------------------------------
-(add-hook 'after-init-hook (lambda () (recentf-mode 1)))
-(setq recentf-save-file "~/.emacs.d/var/.recentf")
-(setq-default recentf-max-saved-items 100
-              recentf-exclude '("/var/" "/ssh:"))
-
-(global-set-key "\C-x\ \C-r" 'recentf-open-files)
-
-;; PLUGINS: hippie-expand
-;; ------------------------------------------------------------------
-; (global-set-key (kbd "M-/") 'hippie-expand)
-(setq hippie-expand-try-functions-list
+;;; hippie-exp
+(use-package hippie-exp
+  :defer t
+  :config
+  (setq hippie-expand-try-functions-list
   '(try-expand-line
     try-expand-line-all-buffers
     try-expand-list
@@ -589,308 +370,434 @@
     try-complete-lisp-symbol
     try-complete-lisp-symbol-partially
     try-expand-whole-kill))
-; (setq dabbrev-case-replace nil)  ;; preserve case on expand with dabbrev
+  :bind
+  ("M-/" . hippie-expand))
 
-;; PLUGINS: dired
+;;; recentf
+(use-package recentf
+  :defer t
+  :config
+  (recentf-mode 1)
+  (setq recentf-save-file (expand-file-name "tmp/.recentf" user-emacs-directory))
+  (setq-default
+    recentf-max-saved-items 100
+    recentf-exclude '("/tmp/" "/ssh:"))
+    ; recentf-auto-cleanup 600)
+  :bind
+  ("C-x C-r" . recentf-open-files))
+
+;;; saveplace
+(use-package saveplace
+  :defer t
+  :config
+  (setq-default save-place t)
+  (setq save-place-file (expand-file-name "tmp/.places" user-emacs-directory)))
+
+;;; dired/dire-x
+(use-package dired
+  :ensure nil
+  :config
+  (add-hook 'dired-mode-hook #'dired-hide-details-mode)
+  (defadvice dired-readin (after dired-after-updating-hook first () activate)
+    "Sort dired listings with directories first before adding marks."
+    (save-excursion
+      (let (buffer-read-only)
+        (forward-line 2)
+        (sort-regexp-fields t "^.*$" "[ ]*." (point) (point-max)))
+      (set-buffer-modified-p nil)))
+  ; (put 'dired-find-alternate-file 'disabled nil)   ;; set only one buffer for dired mode
+  (setq-default
+    dired-auto-revert-buffer t
+    dired-hide-details-hide-symlink-targets nil
+    dired-listing-switches "-alh"
+    dired-ls-F-marks-symlinks nil
+    ; dired-recursive-deletes 'always
+    dired-recursive-copies 'always))
+
+(use-package dired-x
+  :ensure nil
+  :preface
+  (defun me/dired-revert-after-command (command &optional output error)
+    (revert-buffer))
+  :config
+  (advice-add 'dired-smart-shell-command :after #'me/dired-revert-after-command))
+
+;;; winner-mode
+;; Turn on winner-mode, which allows me to use C-c LEFT to undo window configuration changes, if so desired.
+(use-package winner
+  :defer t
+  :init
+  (winner-mode 1))
+
+;;; whitespace
+(use-package whitespace
+  :ensure nil
+  :defer t
+  :config
+  (add-hook 'prog-mode-hook #'whitespace-turn-on)
+  (add-hook 'text-mode-hook #'whitespace-turn-on)
+  (setq-default whitespace-style '(empty tab trailing)))
+
+
 ;; ------------------------------------------------------------------
-;; 延迟 dired load
-(with-eval-after-load 'dired
-    (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
-
-;; set recursive deletes and copies
-(setq dired-recursive-deletes 'always)
-(setq dired-recursive-copies 'always)
-
-(put 'dired-find-alternate-file 'disabled nil)  ;; set only one buffer for dired mode
-
-;; allows you to use keybindings: C-x C-j to enter the path of current file folder
-(require 'dired-x)
-
-;; allows you to copy the contents to the other window when more than two windows are available in a frame.
-(setq dired-dwin-target t)
-
-;; PLUGINS: flymake
+;; => External Packages
 ;; ------------------------------------------------------------------
-; (autoload 'flymake-find-file-hook "flymake" "" t)
-; (add-hook 'find-file-hook 'flymake-find-file-hook)
-; (setq flymake-gui-warnings-enabled nil)
-; (setq flymake-log-level 0)
+;;; smex
+(use-package smex
+  :diminish smex-mode
+  :init
+  (smex-initialize)
+  (setq smex-save-file (expand-file-name "tmp/.smex-items" user-emacs-directory)))
 
-;; PLUGINS: saveplace
-;; ------------------------------------------------------------------
-;; When you visit a file, point goes to the last place where it was when you previously visited the same file.
-;; Save point position between sessions.
-; (require 'saveplace)
-; (setq-default save-place t)
-; (setq save-place-file (expand-file-name "var/.saved-places" user-emacs-directory))
-; ; (setq save-place-file (concat user-emacs-directory "var/saved-places"))
+;;; ivy
+(use-package ivy
+  :diminish ivy-mode
+  :init
+  (ivy-mode 1)
+  :config
+  (setq ivy-use-virtual-buffers t)  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+  (setq enable-recursive-minibuffers t)
+  ; (setq ivy-height 10)        ;; number of result lines to display
+  (setq ivy-count-format "")  ;; does not count candidates
+  (setq ivy-display-style 'fancy)
+  (setq ivy-format-function 'ivy-format-function-line) ; Make highlight extend all the way to the right
+  (setq ivy-initial-inputs-alist nil)  ;; no regexp by default
+  ; (setq ivy-initial-inputs-alist '((counsel-M-x . "^") (man . "^") (woman . "^")))
+  ;; configure regexp engine
+  (setq ivy-re-builders-alist
+      '((counsel-M-x . ivy--regex-fuzzy) ; Only counsel-M-x use flx fuzzy search
+        (t . ivy--regex-ignore-order)  ; allow input not in order
+        (t . ivy--regex-plus)))
+  (add-hook 'after-init-hook
+    (lambda ()
+      (when (bound-and-true-p ido-ubiquitous-mode)
+          (ido-ubiquitous-mode -1))
+      (when (bound-and-true-p ido-mode)
+          (ido-mode -1))
+          (ivy-mode 1)))
+  :bind
+  (:map ivy-minibuffer-map        ; bind in the ivy buffer
+    ("RET" . ivy-alt-done)
+    ("C-!" . ivy-immediate-done)
+    ("C-+" . ivy-call)
+    ("C-<" . ivy-avy)
+    ("C->" . ivy-dispatching-done)
+    ("C-[" . ivy-previous-history-element)
+    ("C-]" . ivy-next-history-element))
+  )
+
+;;; yasnippet
+(use-package yasnippet
+  :diminish yasnippet-mode
+  :config
+  ; (yas-global-mode 1)
+  (yas-reload-all)
+  (add-hook 'prog-mode-hook #'yas-minor-mode))
+
+;;; flycheck
+(use-package flycheck
+  :defer t
+  :diminish flycheck-mode
+  :config
+  (add-hook 'after-init-hook #'global-flycheck-mode)
+  (add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
+  (setq-default
+    flycheck-check-syntax-automatically '(save mode-enabled)
+    flycheck-disabled-checkers '(c/c++-clang c/c++-gcc)
+    flycheck-display-errors-delay .3)
+  (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list))
+
+;;; auto-complete
+(use-package auto-complete
+  :defer t
+  :diminish auto-complete-mode
+  :config
+  (ac-config-default)
+  (setq ac-dwim t)                     ;; tab-mode
+  (setq ac-use-quick-help nil
+        ; setq ac-quick-help-delay 1.0
+        ac-auto-start 2                ;; auto start to complete after input 3 char
+        ac-auto-show-menu 0.5          ;; Show menu 0.8 second later
+        ac-menu-height 12              ;; menu seted as 12 lines
+        ac-use-menu-map t)             ;; use menu map
+  (setq ac-comphist-file (expand-file-name "tmp/.ac-comphist" user-emacs-directory))
+  ;; When typed char was deleted, you can still toggle ac-completion
+  (setq ac-trigger-commands
+        (cons 'backward-delete-char-untabify ac-trigger-commands))
+  :bind
+  (("<C-tab>" . auto-complete)
+    :map ac-menu-map
+    ("C-n" . ac-next)
+    ("C-p" . ac-previous)))
+
+;;; autopair
+(use-package autopair
+  :diminish autopair-mode
+  :config
+  (autopair-global-mode))
 
 
-;; PLUGINS: sr-speedbar
-;; ------------------------------------------------------------------
-; (add-hook 'after-init-hook '(lambda () (sr-speedbar-toggle)))  ;; 开启程序即启用
-(setq sr-speedbar-right-side nil)
-(setq speedbar-show-unknown-files t)
-; (setq sr-speedbar-width 30)
-(setq speedbar-use-images nil)
+;;; multiple-cursors
+(use-package multiple-cursors
+  :defer t
+  :config
+  (setq-default mc/list-file (expand-file-name "tmp/.mc-lists.el" user-emacs-directory))
+  (setq-default
+    mc/edit-lines-empty-lines 'ignore
+    mc/insert-numbers-default 1)
+  :bind
+  (("C-S-<mouse-1>" . mc/add-cursor-on-click)
+   ("C-S-d" . mc/mark-next-like-this-word)
+   ("M-S-<down>" . mc/mark-next-like-this)
+   ("M-S-<up>" . mc/mark-previous-like-this)
+   ("C-c m r" . set-rectangular-region-anchor)
+   ("C-c m c" . mc/edit-lines)
+   ("C-c m a" . mc/edit-beginnings-of-lines)
+   ("C-c m e" . mc/edit-ends-of-lines)
+   ("C-'" . mc-hide-unmatched-lines-mode)))
 
-(global-set-key (kbd "<f6>")
-  (lambda()
-    (interactive)
-    ; (set-frame-width (selected-frame) 120)
-    (sr-speedbar-toggle)))
-; (global-set-key (kbd "<C-f6>") 'speedbar-get-focus)
+;;; sr-speedbar
+(use-package sr-speedbar
+  :defer t
+  :config
+  (setq sr-speedbar-right-side nil
+        speedbar-show-unknown-files t
+        ; setq sr-speedbar-width 30
+        speedbar-use-images nil)
+  :bind
+  ("<f6>" . sr-speedbar-toggle))
 
-;; PLUGINS: which-key
-;; ------------------------------------------------------------------
-;; After 1 second of an unfinished key-press, show the documentation of the
-;; sub-keys available in the key sequence.
-(when (require 'which-key nil 'noerror)
+;;; highlight-symbol
+(use-package highlight-symbol
+  :diminish highlight-symbol-mode
+  :bind
+  (("C-<f3>" . highlight-symbol)
+   ("<f3>" . highlight-symbol-next)
+   ("S-<f3>" . highlight-symbol-prev)
+   ("M-<f3>" . highlight-symbol-query-replace)))
+
+;;; which-key
+;; show sub-keys after a second of an unfinished key-press
+(use-package which-key
+  :diminish which-key-mode
+  :init
   (which-key-mode))
 
-;; PLUGINS: indent-guide
-;; ------------------------------------------------------------------
-; (require 'indent-guide)
-(indent-guide-global-mode)
-;; to show not only one guide line but all guide lines recursively.
-(setq indent-guide-recursive t)
+;;; indent-guide
+(use-package indent-guide
+  :diminish indent-guide-mode
+  :config
+  (indent-guide-global-mode))
 
-;; PLUGINS: highlight-symbol
-;; ------------------------------------------------------------------
-; (require 'highlight-symbol)
-(global-set-key [(control f3)] 'highlight-symbol)
-(global-set-key [f3] 'highlight-symbol-next)
-(global-set-key [(shift f3)] 'highlight-symbol-prev)
-(global-set-key [(meta f3)] 'highlight-symbol-query-replace)
+;;; undo-tree
+;; Tips for uesage: C-x u - undo-tree-visualizer-mode; p/n - move up/down;
+;; b/f - switch between left branch and right; t - show time-stamp; q - exit.
+(use-package undo-tree
+  :diminish undo-tree-mode
+  :config
+  (global-undo-tree-mode 1))
 
-;; PLUGINS: powerline
-;; ------------------------------------------------------------------
-; (powerline-default-theme)
+;;; browse-kill-ring
+;; interactively insert items from kill-ring.
+(use-package browse-kill-ring
+  :diminish browse-kill-ring-mode
+  :config
+  (browse-kill-ring-default-keybindings)
+  (setq browse-kill-ring-quit-action 'save-and-restore))
 
-;; PLUGINS: undo-tree
-;; ------------------------------------------------------------------
-; (when (require 'undo-tree nil 'noerror)
-;     (global-undo-tree-mode))
-; ;; 使用方法：C-x u 进入 undo-tree-visualizer-mode; p n 上下移动;
-; ;; b f 在分支左右切换; t 显示时间戳，选定需要的状态后，q 退出。
+;;; volatile-highlights
+;; minor mode for visual feedback on some operations.
+(use-package volatile-highlights
+  :diminish volatile-highlights-mode
+  :config
+  (volatile-highlights-mode t))
 
-;; PLUGINS: browse-kill-ring
-;; ------------------------------------------------------------------
-; ;; this makes M-y activate the kill-ring IF the previous command
-; ;; was not a yank. (C-y (or C-v in my case))
-; (when (require 'browse-kill-ring nil 'noerror)
-;   (browse-kill-ring-default-keybindings)
-;   (setq browse-kill-ring-quit-action 'save-and-restore))
+;;; benchmark-init
+;; keep track of where time is being spent during Emacs startup.
+(use-package benchmark-init
+  :diminish benchmark-init-mode
+  :config
+  (benchmark-init/activate))
 
-;; PLUGINS: volatile-highlights
-;; ------------------------------------------------------------------
-; ;; Highlight the latest changes in the buffer (like text inserted from: yank, undo, etc.)
-; ;; until the next command is run. Nice, since it lets me see exactly what was changed.
-; (when (require 'volatile-highlights nil 'noerror)
-;   (volatile-highlights-mode t))
+;;; expand-region
+;; Increase region by semantic units.
+(use-package expand-region
+  :defer t
+  :bind
+  ("C-+" . er/contract-region)
+  ("C-=" . er/expand-region))
 
-;; PLUGINS: bing-dict
-;; ------------------------------------------------------------------
-; (setq bing-dict-pronunciation-style 'uk)
-; ; (browse-url    ;; using the external browser
-; ;  (concat "http://www.bing.com/dict/search?mkt=zh-cn&q="
-; ;        (url-hexify-string
-; ;         (read-string "Query: "))))
-; (global-set-key (kbd "C-c d") 'bing-dict-brief)
+;;; anzu
+;; displays current match and total matches information in the mode-line in various search modes.
+(use-package anzu
+  :defer t
+  :diminish anzu-mode
+  :config
+  (global-anzu-mode +1)
+  (progn
+    (set-face-attribute 'anzu-mode-line nil :foreground "yellow" :weight 'bold)
+    (custom-set-variables
+      '(anzu-mode-lighter "")
+      '(anzu-deactivate-region t)
+      '(anzu-search-threshold 1000)
+      '(anzu-replace-to-string-separator " => ")))
+  :bind
+  (("M-%" . anzu-query-replace)
+   ("C-M-%" . anzu-query-replace-regexp)))
 
-;; PLUGINS: htmlize
-;; ------------------------------------------------------------------
-;; convert buffer (with type face, and syntax highlighting) to *.html
-; (autoload 'htmlize-region "htmlize" "htmlize the region" t)
-; (autoload 'htmlize-buffer "htmlize" "htmlize the buffer" t)
+;;; flyspell
+; (use-package flyspell
+;   :diminish flyspell-mode
+;   :defer t
+;   :config
+;   (add-hook 'prog-mode-hook #'my/enable-flyspell-prog-mode)
+;   (defun my/enable-flyspell-prog-mode ()
+;     (interactive)
+;     (flyspell-prog-mode)))
 
-;; PLUGINS: benchmark-init
-;; ------------------------------------------------------------------
-; (benchmark-init/activate)
-
-;; PLUGINS: tabbar
-;; ------------------------------------------------------------------
-; (tabbar-mode)
-; (global-set-key (kbd "<M-up>")    'tabbar-backward-group)
-; (global-set-key (kbd "<M-down>")  'tabbar-forward-group)
-; (global-set-key (kbd "<M-left>")  'tabbar-backward-tab)
-; (global-set-key (kbd "<M-right>") 'tabbar-forward-tab)
-
-; (setq
-;  tabbar-scroll-left-help-function nil   ;don't show help information
-;  tabbar-scroll-right-help-function nil
-;  tabbar-help-on-tab-function nil
-;  tabbar-home-help-function nil
-;  tabbar-buffer-home-button (quote (("") "")) ;don't show tabbar button
-;  tabbar-scroll-left-button (quote (("") ""))
-;  tabbar-scroll-right-button (quote (("") "")))
-
-; (defun my-tabbar-buffer-groups ()
-;   "Return the list of group names the current buffer belongs to.  Return a list of one element based on major mode."
-;   (list
-;    (cond
-;     ((or (get-buffer-process (current-buffer))
-;          ;; Check if the major mode derives from `comint-mode' or
-;          ;; `compilation-mode'.
-;          (tabbar-buffer-mode-derived-p
-;           major-mode '(comint-mode compilation-mode)))
-;      "Process")
-;     ((string-equal "*" (substring (buffer-name) 0 1)) "Emacs Buffer")
-;     ((eq major-mode 'dired-mode) "Dired")
-;     (t "User Buffer"))))
-
-; (setq tabbar-buffer-groups-function 'my-tabbar-buffer-groups)
-
-
-;; ==================================================================
-;; SPECIAL MODE
-;; ==================================================================
 
 ;; ------------------------------------------------------------------
-;; => Text Mode
+;; => Special Mode
 ;; ------------------------------------------------------------------
 
-;; Line breaks / long lines
-(defvar soft-line-breaks-p nil   ; nil or t
-  "Use hard or soft line breaks for long lines.")
-
-;; M-q doesn't insert double space after period.
-(setq sentence-end-double-space nil)
-
-(if soft-line-breaks-p
-    (add-hook 'text-mode-hook 'turn-on-visual-line-mode)
-  (add-hook 'text-mode-hook
-            '(lambda ()
-               (set-fill-column 78)       ; lines are 78 chars long ...
-               (auto-fill-mode t))))      ; ...and wrapped around automagically
+;; ------------------------------------------------------------------
+;;; org-mode
+(use-package org
+  :defer t
+  :config
+  (add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))  ;; auto wrap
+  (setq org-src-fontify-natively t  ;; org-mode Syntax on
+        org-log-done t
+        org-ellipsis "…"            ;; replace the "..." with "…" for collapsed org-mode content
+        org-return-follows-link t)  ;; RET follows hyperlinks in org-mode:
+  :bind
+  (("\C-cl" . org-store-link)
+   ("\C-cc" . org-capture)
+   ("\C-ca" . org-agenda)
+   ("\C-cb" . org-iswitchb)))
 
 ;; ------------------------------------------------------------------
-;; => LaTeX Mode (auctex)
+;;; markdown-mode
+(use-package markdown-mode
+  :defer t
+  :mode
+  (("\\.text\\'" . markdown-mode)
+   ("\\.markdown\\'" . markdown-mode)
+   ("\\.md\\'" . markdown-mode)))
+
+;;; pandoc-mode
+; (use-package pandoc-mode
+;   :config
+;   (add-hook 'markdown-mode-hook 'pandoc-mode))
+
 ;; ------------------------------------------------------------------
+;;; LaTex / AucTeX
+(use-package tex
+  :ensure auctex
+  :defer t
+  :config
+  (setq TeX-auto-save t)
+  (setq TeX-parse-self t)
+  (setq-default TeX-master nil)
+  (add-hook 'LaTeX-mode-hook 'visual-line-mode)
+  (add-hook 'LaTeX-mode-hook 'flyspell-mode)
+  (add-hook 'LaTeX-mode-hook 'LaTeX-math-mode)
+  (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
+  (setq reftex-plug-into-AUCTeX t)
+  (setq TeX-PDF-mode t)
+  (setq reftex-bibliography-commands '("bibliography" "nobibliography" "addbibresource")))
 
-;; 1. Miscellaneous
-;; choose one, for what happens with long lines:
-; (add-hook 'LaTeX-mode-hook 'visual-line-mode)
-; (add-hook 'LaTeX-mode-hook 'auto-fill-mode)
+;; ------------------------------------------------------------------
+;;; python
+;; The package is "python" but the mode is "python-mode":
+(use-package python
+  :defer t
+  :mode
+  ("\\.py\\'" . python-mode)
+  :interpreter
+  ("python" . python-mode)
+  :config
+  (setq python-shell-interpreter "ipython"
+        python-shell-interpreter-args ""
+        python-shell-prompt-regexp "In \\[[0-9]+\\]: "
+        python-shell-prompt-output-regexp "Out\\[[0-9]+\\]: "
+        python-shell-completion-setup-code
+        "from IPython.core.completerlib import module_completion"
+        python-shell-completion-module-string-code
+        "';'.join(module_completion('''%s'''))\n"
+        python-shell-completion-string-code
+        "';'.join(get_ipython().Completer.all_completions('''%s'''))\n")
+  (setq py-electric-colon-active t)
+  (setenv "LC_CTYPE" "UTF-8"))
 
-(add-hook 'LaTeX-mode-hook
+;;; pylint-mode
+(use-package pylint
+  :after python
+  :config
+  (add-hook 'python-mode-hook 'pylint-add-menu-items)
+  (add-hook 'python-mode-hook 'pylint-add-key-bindings))
+
+;; ------------------------------------------------------------------
+;;; matlab-mode
+(use-package matlab-mode
+  :ensure nil
+  :defer t
+  :mode
+  ("\\.m$" . matlab-mode)
+  :config
+  (matlab-cedet-setup))
+
+;; ------------------------------------------------------------------
+;;; CMake
+(use-package cmake-mode
+  :ensure nil
+  :defer t
+  :config
+  ;; Add cmake listfile names to the mode list.
+  (setq auto-mode-alist
+    (append
+      '(("CMakeLists\\.txt\\'" . cmake-mode))
+      '(("\\.cmake\\'" . cmake-mode))
+      auto-mode-alist)))
+
+;; ------------------------------------------------------------------
+;;; GUD Mode (gdb debugging)
+(add-hook 'gud-mode-hook
   '(lambda ()
-    (ispell-change-dictionary "american" nil)
-    ;; Make equations into images & show in emacs:
-    (autoload 'latex-math-preview-expression "latex-math-preview" nil t)
-    (autoload 'latex-math-preview-save-image-file "latex-math-preview" nil t)
-    (autoload 'latex-math-preview-beamer-frame "latex-math-preview" nil t)))
-
-(setq font-latex-fontify-script nil ;; Don't fontify sub/super: _ ^
-  TeX-auto-save t                 ;; enable parse on save
-  TeX-parse-self t                ;; enable parse on load
-  TeX-auto-untabify t             ;; remove Tabs at save
-  ispell-check-comments nil)      ;; don't spell check comments
-
-;; Auto choose Swedish if usepackage{babel}[swedish]
-;; so that:  Shift+2-> '' rather than ", or similar...
-(add-hook 'TeX-language-sv-hook
-  (lambda() (ispell-change-dictionary "svenska")))
-
-;; 2. Math-$$-matchning
-(setq LaTeX-mode-hook'
-  (lambda () (defun TeX-insert-dollar ()
-    "custom redefined insert-dollar"
-    (interactive)
-    (insert "$$")           ;; in LaTeX mode, typing "$" automatically
-    (backward-char 1))))    ;; insert "$$" and move back one char.
-
-;; 3. RefTeX awesomeness
-;; Navigate sections by right mouse button. Similar to as C-c =
-(add-hook 'reftex-load-hook 'imenu-add-menubar-index)
-(add-hook 'reftex-mode-hook 'imenu-add-menubar-index)
-
-(add-hook 'LaTeX-mode-hook 'turn-on-reftex)            ;; with AUCTeX LaTeX mode
-
-(autoload 'reftex-mode    "reftex" "RefTeX Minor Mode" t)
-(autoload 'turn-on-reftex "reftex" "RefTeX Minor Mode" t)
-
-;; To integrate RefTex even closer with AUCTeX.  E.g: when C-c C-s
-;; or C-c C-e is called, AUCTex will call RefTeX, which will insert
-;; a label automatically instead of having AUCTeX ask you for one;
-;; When C-c C-s AUCTeX will update section list in RefTeX; RefTeX
-;; will also tell AUCTeX about new label, citation, and index keys,
-;; and add them to completions list.
-(setq reftex-plug-into-AUCTeX t)
-
-;; Make C-u prefixed commands not re-parse entire doc.
-(setq reftex-enable-partial-scans t)
-
-;; Even with partial-scan enables, reftex must make one full scan,
-;; this saves the result to a file "*.rel"
-; (setq reftex-save-parse-info t)
-
-;; use separate buffer for selecting each label type
-; (setq reftex-use-multiple-selection-buffers t)
+     (local-set-key [home] ; move to beginning of line, after prompt
+                    'comint-bol)
+     (local-set-key [up]   ; cycle backward through command history
+                    '(lambda () (interactive)
+                       (if (comint-after-pmark-p)
+                           (comint-previous-input 1)
+                         (previous-line 1))))
+     (local-set-key [down] ; cycle forward through command history
+                    '(lambda () (interactive)
+                       (if (comint-after-pmark-p)
+                           (comint-next-input 1)
+                         (forward-line 1)))))
+  (setq gdb-many-windows t))
 
 ;; ------------------------------------------------------------------
-;; => Org Mode
-;; ------------------------------------------------------------------
-
-(setq org-src-fontify-natively t)  ;; org-mode 代码高亮
-
-;; The following lines are always needed.  Choose your own keys.
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-cc" 'org-capture)
-(define-key global-map "\C-ca" 'org-agenda)
-(define-key global-map "\C-cb" 'org-iswitchb)
-
-;; 自动换行
-(add-hook 'org-mode-hook (lambda () (setq truncate-lines nil)))
-
-(setq org-log-done t)
-;; replace the "..." with "…" for collapsed org-mode content
-(setq org-ellipsis "…")
-;; RET follows hyperlinks in org-mode:
-(setq org-return-follows-link t)
-
-;; Use abbrev-minor-mode with org-mode: (I have global abbrev mode now)
-; (add-hook 'org-mode-hook (lambda () (abbrev-mode 1)))
-
-;; ------------------------------------------------------------------
-;; => Markdown Mode
-;; ------------------------------------------------------------------
-
-;; ------------------------------------------------------------------
-;; => Programming Mode
-;; ------------------------------------------------------------------
-
-;; Check syntax while typing code:
-; (add-hook 'prog-mode-hook #'flycheck-mode)
+;;; C++ Mode
 
 (setq compilation-ask-about-save nil)  ;; don't ask me to save _all_ buffers
 (setq compilation-scroll-output 'first-error)  ;; Stop on the first error
 (setq compilation-skip-threshold 2)  ;; Don't stop on info or warnings
 
-;; ------------------------------------------------------------------
-;; => C++ Mode
-;; ------------------------------------------------------------------
-
 ;; 1. Generic
-;; ------------------------------------------------------------------
 ;; C++-specific. Which extensions should be associated with C++ (rather than C)
 (add-to-list 'auto-mode-alist '("\\.h$"  . c++-mode)) ;h-files
 (add-to-list 'auto-mode-alist '("\\.icc" . c++-mode)) ;implementation files
 (add-to-list 'auto-mode-alist '("\\.tcc" . c++-mode)) ;files with templates
 
-;; Indentation style:
-;; (add-hook 'c-mode-common-hook '(lambda () (c-set-style "stroustrup")))
-;; (add-hook 'c-mode-common-hook '(lambda () (c-set-style "linux")))
-
 ;; 2. Better compile buffer
-;; ------------------------------------------------------------------
-(require 'compile)
+; (require 'compile)
 (add-hook 'c-mode-common-hook
   (lambda ()
     (setq
-     compilation-scroll-output 'first-error   ; scroll until first error
-     ;; compilation-read-command nil          ; don't need enter
+     compilation-scroll-output 'first-error   ;; scroll until first error
+     ;; compilation-read-command nil          ;; don't need enter
      compilation-window-height 11)
 
     (local-set-key (kbd "<M-up>")   'previous-error)
@@ -918,13 +825,9 @@
   )
 
 ;; 3. Show function name in mod-line
-;; ------------------------------------------------------------------
-(add-hook 'c-mode-common-hook
-  (lambda ()
-    (which-function-mode t)))
+(add-hook 'c-mode-common-hook (lambda () (which-function-mode t)))
 
 ;; 4. Navigate .h och .cpp
-;; ------------------------------------------------------------------
 ;; Now, we can quickly switch between myfile.cc and myfile.h with C-c o.
 ;; Note the use of the c-mode-common-hook, so it will work for both C and C++.
 (add-hook 'c-mode-common-hook
@@ -932,140 +835,451 @@
     (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
 
 ;; ------------------------------------------------------------------
-;; * GUD Mode * (gdb debugging)
-;; ------------------------------------------------------------------
-
-;; Make up/down behave as in terminal run it like this "M-x gdb",
-;  gdb --annotate=3 ./yourBinary
-(add-hook 'gud-mode-hook
-  '(lambda ()
-     (local-set-key [home] ; move to beginning of line, after prompt
-                    'comint-bol)
-     (local-set-key [up]   ; cycle backward through command history
-                    '(lambda () (interactive)
-                       (if (comint-after-pmark-p)
-                           (comint-previous-input 1)
-                         (previous-line 1))))
-     (local-set-key [down] ; cycle forward through command history
-                    '(lambda () (interactive)
-                       (if (comint-after-pmark-p)
-                           (comint-next-input 1)
-                         (forward-line 1))))
-    )
-  (setq gdb-many-windows t))
-
-;; ------------------------------------------------------------------
-;; => Python Mode
-;; ------------------------------------------------------------------
-
-;; plugin: anaconda-mode
-;; ------------------------------------------------------------------
-; (add-hook 'python-mode-hook 'anaconda-mode)
-; (add-hook 'python-mode-hook 'anaconda-eldoc-mode)
-
-;; plugin: python IDE (elpy, ein, autopep8, pylint)
-;; ------------------------------------------------------------------
-;; install the required Python packages: pip install flake8 importmagic autopep8
-; (elpy-enable)
-; (elpy-use-ipython)
-
-; (when (require 'flycheck nil t)
-;     (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-;     (add-hook 'elpy-mode-hook 'flycheck-mode))
-
-; (require 'py-autopep8)
-; (add-hook 'elpy-mode-hook 'py-autopep8-enable-on-save)
-; (add-hook 'ein:connect-mode-hook 'ein:jedi-setup)  ;; jedi config
-; (setq ein:use-smartrep t)  ;; smartrep config
-
-(add-hook 'python-mode-hook 'pylint-add-menu-items)
-(add-hook 'python-mode-hook 'pylint-add-key-bindings)
-; (defun flymake-pylint-init ()
-;   (list python-python-command
-;         (list "-m" "pylint.lint" "-f" "parseable" buffer-file-name)))
-; (add-to-list 'flymake-allowed-file-name-masks
-;               '("\\.py\\'" flymake-pylint-init))
-
-;; ------------------------------------------------------------------
-;; => Winner Mode
-;; ------------------------------------------------------------------
-
-;; Useful to switch between different/previous buffer-layouts, or buffer history
-;; cycle through window layouts/contents
-;; winner conflicts with org, use C-c left/right instead
-(when (require 'winner nil 'noerror)
-  (setq winner-dont-bind-my-keys t)
-  (global-set-key (kbd "<C-c left>")  'winner-undo)
-  (global-set-key (kbd "<C-c right>") 'winner-redo)
-  (winner-mode t))
-
-;; ------------------------------------------------------------------
-;; => Ediff Mode
-;; ------------------------------------------------------------------
-
-;; Don't use strange separate control-window.
-(customize-set-variable 'ediff-window-setup-function 'ediff-setup-windows-plain)
-
-;; Side by side comparison is easier than vertical split (tob-bottom-stacked) window
-(customize-set-variable 'ediff-split-window-function 'split-window-horizontally)
-
+;;; Ediff Mode
+;; To people unfamiliar with ediff, the functions to try are:
+;; ediff-current-file (see changes between current modified file and its saved version),
+;; ediff-buffers (diff two different buffers),
+;; ediff-files (diff two different files, I mark two files in dired and call this).
+(custom-set-variables
+  '(ediff-window-setup-function 'ediff-setup-windows-plain)  ;; Don't use strange separate control-window.
+  '(ediff-split-window-function 'split-window-horizontally)  ;; Side by side comparison
+  '(ediff-diff-options "-w"))   ;; Ignore white space
 ;; reset the window configuration after ediff is done (winner-mode)
-;;(add-hook 'ediff-after-quit-hook-internal 'winner-undo)
+(add-hook 'ediff-after-quit-hook-internal 'winner-undo)
 
 
 ;; ==================================================================
-;; 自定义功能(函数)
+;; SELF-DEFINED FUNCTIONS
 ;; ==================================================================
 
-;; 快速打开配置文件
+;; Open config file quickly
 ;; ------------------------------------------------------------------
-(defun open-init-file()
+(defun me/open-init-file()
   "To open the init.el file."
   (interactive)
   (find-file "~/.emacs.d/init.el"))
-(global-set-key (kbd "<C-f12>") 'open-init-file)
+(global-set-key (kbd "<C-f12>") 'me/open-init-file)
 
-(defun open-home-path()
-  "To open the home path."
-  (interactive)
-  (find-file "~/"))
-(global-set-key (kbd "<f12>") 'open-home-path)
-
-(defun copy-buffer-file-path ()
+(defun me/copy-buffer-file-path ()
   "Put current buffer's short path into the kill ring."
   (interactive)
   (when (buffer-file-name)
     (kill-new (f-short (buffer-file-name)))))
 
-(defun copy-buffer-file-name ()
+(defun me/copy-buffer-file-name ()
   "Put current buffer's base name into the kill ring."
   (interactive)
   (when (buffer-file-name)
     (kill-new (f-filename (buffer-file-name)))))
 ;; ------------------------------------------------------------------
 
-;; 插入日期和时间
+;; Insert Time and Date
 ;; ------------------------------------------------------------------
-;; 插入日期
-(defun insert-current-date ()
-  "Insert the current date."
-  (interactive "*")
-  ; (insert (format-time-string "%Y/%m/%d %H:%M:%S" (current-time))))
-  (insert (format-time-string "%Y/%m/%d" (current-time))))
-(global-set-key "\C-xd" 'insert-current-date)
-
-;; 插入时间
-(defun insert-current-time ()
+;; Insert time
+(defun me/insert-current-time ()
   "Insert the current time."
   (interactive "*")
   ; (insert (format-time-string "%Y/%m/%d %H:%M:%S" (current-time))))
   (insert (format-time-string "%H:%M:%S" (current-time))))
-(global-set-key "\C-xt" 'insert-current-time)
+(global-set-key "\C-xt" 'me/insert-current-time)
+
+;; Insert date
+(defun me/insert-current-date ()
+  "Insert the current date."
+  (interactive "*")
+  ; (insert (format-time-string "%Y/%m/%d %H:%M:%S" (current-time))))
+  (insert (format-time-string "%Y/%m/%d" (current-time))))
+(global-set-key "\C-xd" 'me/insert-current-date)
+
+;; Insert the current date.
+(defun me/date-iso ()
+  "Insert the current date, ISO format, eg. 2016-12-09."
+  (interactive)
+  (insert (format-time-string "%F")))
+
+(defun me/date-iso-with-time ()
+  "Insert the current date, ISO format with time, eg. 2016-12-09T14:34:54+0100."
+  (interactive)
+  (insert (format-time-string "%FT%T%z")))
+
+(defun me/date-long ()
+  "Insert the current date, long format, eg. December 09, 2016."
+  (interactive)
+  (insert (format-time-string "%B %d, %Y")))
+
+(defun me/date-long-with-time ()
+  "Insert the current date, long format, eg. December 09, 2016 - 14:34."
+  (interactive)
+  (insert (capitalize (format-time-string "%B %d, %Y - %H:%M"))))
+
+(defun me/date-short ()
+  "Insert the current date, short format, eg. 2016.12.09."
+  (interactive)
+  (insert (format-time-string "%Y.%m.%d")))
+
+(defun me/date-short-with-time ()
+  "Insert the current date, short format with time, eg. 2016.12.09 14:34"
+  (interactive)
+  (insert (format-time-string "%Y.%m.%d %H:%M")))
 ;; ------------------------------------------------------------------
 
-;; Move line Up and Down
+;; Linum-config
 ;; ------------------------------------------------------------------
-(defun move-text-internal (arg)
+;; 1.Linum: fix margins when font is scaled
+(defun me/linum-update-window-scale-fix (win)
+  "Fix linum margins for scaled text."
+  (set-window-margins win
+      (ceiling (* (if (boundp 'text-scale-mode-step)
+    (expt text-scale-mode-step
+        text-scale-mode-amount) 1)
+      (if (car (window-margins))
+          (car (window-margins)) 1)
+      ))))
+(advice-add #'linum-update-window :after #'me/linum-update-window-scale-fix)
+
+;; 2.Linum: Select lines by clicking
+(defvar *linum-mdown-line* nil)
+
+(defun me/line-at-click ()
+  (save-excursion
+    (let ((click-y (cdr (cdr (mouse-position))))
+      (line-move-visual-store line-move-visual))
+      (setq line-move-visual t)
+      (goto-char (window-start))
+      (next-line (1- click-y))
+      (setq line-move-visual line-move-visual-store)
+      ;; If you are using tabbar substitute the next line with
+      ;; (line-number-at-pos))))
+      (1+ (line-number-at-pos)))))
+
+(defun me/md-select-linum ()
+  (interactive)
+  (goto-line (me/line-at-click))
+  (set-mark (point))
+  (setq *linum-mdown-line*
+    (line-number-at-pos)))
+
+(defun me/mu-select-linum ()
+  (interactive)
+  (when *linum-mdown-line*
+    (let (mu-line)
+      ;; (goto-line (me/line-at-click))
+      (setq mu-line (me/line-at-click))
+      (goto-line (max *linum-mdown-line* mu-line))
+      (set-mark (line-end-position))
+      (goto-line (min *linum-mdown-line* mu-line))
+      (setq *linum-mdown*
+    nil))))
+
+(global-set-key (kbd "<left-margin> <down-mouse-1>") 'me/md-select-linum)
+(global-set-key (kbd "<left-margin> <mouse-1>") 'me/mu-select-linum)
+(global-set-key (kbd "<left-margin> <drag-mouse-1>") 'me/mu-select-linum)
+
+;; 3.Linum: highlight the current line number
+; (require 'linum)
+(defvar linum-current-line 1 "Current line number.")
+(defvar linum-border-width 1 "Border width for linum.")
+
+(defface linum-current-line
+  `((t :inherit linum
+       :foreground "goldenrod"
+       :weight bold
+       ))
+  "Face for displaying the current line number."
+  :group 'linum)
+
+(defadvice linum-update (before advice-linum-update activate)
+  "Set the current line."
+  (setq linum-current-line (line-number-at-pos)
+        ;; It's the same algorithm that linum dynamic. I only had added one
+        ;; space in front of the first digit.
+        linum-border-width (number-to-string
+                            (+ 1 (length
+                                  (number-to-string
+                                   (count-lines (point-min) (point-max))))))))
+
+(defun me/linum-highlight-current-line (line-number)
+  "Highlight the current LINE-NUMBER using 'linum-current-line' face."
+  (let ((face (if (= line-number linum-current-line)
+                  'linum-current-line
+                'linum)))
+    (propertize (format (concat "%" linum-border-width "d") line-number)
+                'face face)))
+
+(setq linum-format 'me/linum-highlight-current-line)
+
+;; 4.Linum: Separating line numbers from text
+
+(unless window-system
+  (add-hook 'linum-before-numbering-hook
+        (lambda ()
+          (setq-local linum-format-fmt
+              (let ((w (length (number-to-string
+                        (count-lines (point-min) (point-max))))))
+                (concat "%" (number-to-string w) "d"))))))
+
+(defun linum-format-func (line)
+  (concat
+   (propertize (format linum-format-fmt line) 'face 'linum)
+   (propertize " " 'face 'mode-line)))
+
+(unless window-system
+  (setq linum-format 'linum-format-func))
+
+;; ------------------------------------------------------------------
+
+;; Revert buffers
+;; ------------------------------------------------------------------
+(defun me/revert-all-buffers ()
+  "Refreshes all open buffers from their respective files."
+  (interactive)
+  (dolist (buf (buffer-list))
+    (with-current-buffer buf
+      (when (and (buffer-file-name) (not (buffer-modified-p)))
+        (revert-buffer t t t) )))
+  (message "Refreshed open files."))
+;; ------------------------------------------------------------------
+
+;; Search all open buffers
+;; ------------------------------------------------------------------
+(defun me/search (regexp)
+  "Search all buffers for a REGEXP."
+  (interactive "sRegexp to search for: ")
+  (multi-occur-in-matching-buffers ".*" regexp))
+; (global-set-key (kbd "C-c o") 'multi-occur-in-matching-buffers)
+;; ------------------------------------------------------------------
+
+;; Nuke all buffers
+;; ------------------------------------------------------------------
+(defun me/nuke-all-buffers ()
+  "Kill all buffers, leaving *scratch* only."
+  (interactive)
+  (mapc (lambda (x) (kill-buffer x)) (buffer-list)) (delete-other-windows))
+;; ------------------------------------------------------------------
+
+;; Kill all other buffers
+;; ------------------------------------------------------------------
+(defun me/kill-all-other-buffers ()
+  "Kill all other buffers, except the current one."
+  (interactive)
+  (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
+;; ------------------------------------------------------------------
+
+;; Delete current buffer and file
+;; ------------------------------------------------------------------
+;; I like the feel between C-x k to kill the buffer and C-x C-k to kill the file.
+;; Release ctrl to kill it a little, hold to kill it a lot.
+(defun me/delete-current-buffer-file ()
+  "Removes file connected to current buffer and kills buffer."
+  (interactive)
+  (let ((filename (buffer-file-name))
+        (buffer (current-buffer))
+        (name (buffer-name)))
+    (if (not (and filename (file-exists-p filename)))
+        (ido-kill-buffer)
+      (when (yes-or-no-p "Are you sure you want to remove this file? ")
+        (delete-file filename)
+        (kill-buffer buffer)
+        (message "File '%s' successfully removed." filename)))))
+; (global-set-key (kbd "C-c C-k") 'me/delete-current-buffer-file)
+;; ------------------------------------------------------------------
+
+;; Word Lookup
+;; ------------------------------------------------------------------
+(defun me/lookup-word-definition ()
+  "Look up the current word's definition in a browser. If a region is active (a phrase), lookup that phrase."
+  (interactive)
+  (let (myWord myUrl)
+    (setq myWord
+          (if (region-active-p)
+              (buffer-substring-no-properties (region-beginning) (region-end))
+            (thing-at-point 'symbol)))
+
+    (setq myWord (replace-regexp-in-string " " "%20" myWord))
+    ;; url: http://www.bing.com/dict/search?mkt=zh-cn&q=
+    (setq myUrl (concat "http://www.bing.com/dict/search?mkt=zh-cn&q=" myWord))
+
+    (browse-url myUrl)
+    ;; (w3m-browse-url myUrl)  ;; if you want to browse using w3m
+    ))
+(global-set-key (kbd "<C-f1>") 'me/lookup-word-definition)
+;; ------------------------------------------------------------------
+
+;; Set open multi shell
+;; ------------------------------------------------------------------
+(defun me/shell-mode-auto-rename-buffer (text)
+  "Set for being able to poen multi shell buffer."
+  (if (eq major-mode 'shell-mode)
+      (rename-buffer (concat "shell:" default-directory) t)))
+
+(add-hook 'comint-output-filter-functions 'me/shell-mode-auto-rename-buffer)
+;; ------------------------------------------------------------------
+
+;; Popup-shell
+;; ------------------------------------------------------------------
+(defvar my-shell-popup-buffer nil)
+
+(defun me/shell-popup ()
+  "Toggle a shell popup buffer with the current file's directory as cwd."
+  (interactive)
+  (unless (buffer-live-p my-shell-popup-buffer)
+    (save-window-excursion (shell "*Popup Shell*"))
+    (setq my-shell-popup-buffer (get-buffer "*Popup Shell*")))
+  (let ((win (get-buffer-window my-shell-popup-buffer))
+        (dir (file-name-directory (or (buffer-file-name)
+                                      ;; dired
+                                      dired-directory
+                                      ;; use HOME
+                                      "~/"))))
+    (if win
+        (quit-window nil win)
+      (pop-to-buffer my-shell-popup-buffer nil t)
+      (comint-send-string nil (concat "cd " dir "\n")))))
+
+(global-set-key (kbd "<C-f2>") 'me/shell-popup)
+;; ------------------------------------------------------------------
+
+;; Multi-occur
+;; ------------------------------------------------------------------
+;; Occur is awesome. Do M-s o to search for a word in current buffer and show list of all occurrences in a separate buffer.
+;; M-x multi-occur-in-matching-buffers
+;; is where the real power is, since this lets you search all open buffers matching the
+;; regexp you give it, and show hits in a new buffer, which behaves just like the compile buffer.
+
+; (eval-when-compile (require 'cl))
+(defun me/get-buffers-matching-mode (mode)
+  "Return a list of buffers where their 'major-mode' is equal to MODE."
+  (let ((buffer-mode-matches '()))
+    (dolist (buf (buffer-list))
+      (with-current-buffer buf
+        (if (eq mode major-mode)
+            (add-to-list 'buffer-mode-matches buf))))
+    buffer-mode-matches))
+
+(defun me/multi-occur-in-this-mode ()
+  "Show all lines matching REGEXP in buffers with this major mode."
+  (interactive)
+  (multi-occur
+    (me/get-buffers-matching-mode major-mode)
+    (car (occur-read-primary-args))))
+
+(global-set-key (kbd "C-M-<f3>") 'me/multi-occur-in-this-mode)
+;; ------------------------------------------------------------------
+
+;; Tab-Indent
+;; ------------------------------------------------------------------
+;;*** simple indent/unindent just like other editors
+;; unlike emacs' default settings, this would not use syntax-based indent, but:
+;;  - if region selected, indent/unindent the region (tab-width)
+;;    * the region mark would not deactivated automatically
+;;  - if no region selected, <TAB> would
+;;    * if cursor lies in line leading, always indent tab-width
+;;    * if cursor lies in word ending and `tab-always-indent' is `complete', try complete
+;;    * otherwise, always insert a TAB char or SPACEs
+;;  - if no region selected, <S-TAB> would
+;;    * if cursor lies in line leading, always unindent tab-width
+;;    * otherwise, the cursor would move backwards (tab-width)
+;; From: https://stackoverflow.com/questions/2249955/emacs-shift-tab-to-left-shift-the-block
+;; Note: this implementation would hornor `tab-always-indent', `indent-tabs-mode' and `tab-with'.
+
+(defun me/indent-region-custom(numSpaces)
+  (progn
+    ;; default to start and end of current line
+    (setq regionStart (line-beginning-position))
+    (setq regionEnd (line-end-position))
+
+    ;; if there's a selection, use that instead of the current line
+    (when (use-region-p)
+      (setq regionStart (region-beginning))
+      (setq regionEnd (region-end)))
+
+    (save-excursion ;; restore the position afterwards
+      (goto-char regionStart) ;; go to the start of region
+      (setq start (line-beginning-position)) ;; save the start of the line
+      (goto-char regionEnd) ;; go to the end of region
+      (setq end (line-end-position)) ;; save the end of the line
+
+      (indent-rigidly start end numSpaces) ;; indent between start and end
+      (setq deactivate-mark nil) ;; restore the selected region
+    )))
+
+(defun me/untab-region (N)
+  "Unindent line, or block if it's a region selected."
+  (interactive "p")
+  (me/indent-region-custom -4))
+
+(defun me/tab-region (N)
+  "Indent line, or block if it's a region selected."
+  (interactive "p")
+  (if (active-minibuffer-window)
+      (minibuffer-complete)    ;; tab is pressed in minibuffer window -> do completion
+  ;; else
+  (if (string= (buffer-name) "*shell*")
+      (comint-dynamic-complete) ;; in a shell, use tab completion
+  ;; else
+  (if (use-region-p)    ;; tab is pressed is any other buffer -> execute with space insertion
+      (me/indent-region-custom 4) ;; region was selected, call indent-region
+      (insert "    ") ;; else insert four spaces as expected
+  ))))
+
+(global-set-key (kbd "M-[") 'me/untab-region) ;; (kbd "<backtab>")
+(global-set-key (kbd "M-]") 'me/tab-region)   ;; (kbd "<tab>")
+;; ------------------------------------------------------------------
+
+;; Comment Enhanced
+;; ------------------------------------------------------------------
+;; If no region is selected and current line is not blank and we are not
+;; at the end of the line, then comment current line. Replaces default behaviour of
+;; comment-dwim, when it inserts comment at the end of the line.
+(defun me/enhance-comment-dwim-line (&optional arg)
+  "Replacement for the comment-dwim command."
+  (interactive "*P")
+  (comment-normalize-vars)
+  (if (and (not (region-active-p)) (not (looking-at "[ \t]*$")))
+      (comment-or-uncomment-region (line-beginning-position) (line-end-position))
+    (comment-dwim arg)))
+
+(global-set-key "\M-;" 'me/enhance-comment-dwim-line)
+;; ------------------------------------------------------------------
+
+;; RM-Trailing-Spaces
+;; ------------------------------------------------------------------
+(defun me/rm-trailing-spaces ()
+  "Remove trailing white spaces from the whole document."
+  (interactive)
+  (save-excursion
+    (let ((current (point)))
+      (goto-char 0)
+      (while (re-search-forward "[ \t]+$" nil t)
+        (replace-match "" nil nil))
+      (goto-char current)))
+  (message "Remove trailing white spaces from the whole document finished."))
+;; ------------------------------------------------------------------
+
+;; Opening new lines
+;; ------------------------------------------------------------------
+(defun me/open-line-below ()
+  "Open new line below current line with indentation."
+  (interactive)
+  (end-of-line)
+  (newline)
+  (indent-for-tab-command))
+
+(defun me/open-line-above ()
+  "Open new line above current line with indentation."
+  (interactive)
+  (beginning-of-line)
+  (newline)
+  (forward-line -1)
+  (indent-for-tab-command))
+
+(global-set-key (kbd "<C-return>") 'me/open-line-below)
+(global-set-key (kbd "<C-S-return>") 'me/open-line-above)
+;; ------------------------------------------------------------------
+
+;; Move line/region Up and Down
+;; ------------------------------------------------------------------
+(defun me/move-text-internal (arg)
   (cond
    ((and mark-active transient-mark-mode)
     (if (> (point) (mark))
@@ -1088,252 +1302,309 @@
     (forward-line -1))
       (move-to-column column t)))))
 
-(defun move-text-down (arg)
+(defun me/move-text-down (arg)
   "Move region (transient-mark-mode active) or current line ARG lines down."
   (interactive "*p")
-  (move-text-internal arg))
+  (me/move-text-internal arg))
 
-(defun move-text-up (arg)
+(defun me/move-text-up (arg)
   "Move region (transient-mark-mode active) or current line ARG lines up."
   (interactive "*p")
-  (move-text-internal (- arg)))
+  (me/move-text-internal (- arg)))
 
-;; 使用 Ctrl + Alt + 方向健，上下移动行或者选定区域
-(global-set-key [C-M-up] 'move-text-up)
-(global-set-key [C-M-down] 'move-text-down)
+;; Use Ctrl+Alt+up/down, to move the line under point or region up/down.
+(global-set-key [C-M-up] 'me/move-text-up)
+(global-set-key [C-M-down] 'me/move-text-down)
 ;; ------------------------------------------------------------------
 
-;; Linum-config
+;; Show line numbers temporarily
 ;; ------------------------------------------------------------------
-;; 1.Linum: fix margins when font is scaled
-(defun linum-update-window-scale-fix (win)
-  "fix linum for scaled text"
-  (set-window-margins win
-      (ceiling (* (if (boundp 'text-scale-mode-step)
-    (expt text-scale-mode-step
-        text-scale-mode-amount) 1)
-      (if (car (window-margins))
-          (car (window-margins)) 1)
-      ))))
-(advice-add #'linum-update-window :after #'linum-update-window-scale-fix)
+(defun me/goto-line-with-feedback ()
+  "Show line numbers temporarily, while prompting for the line number input."
+  (interactive)
+  (unwind-protect
+      (progn
+        (linum-mode 1)
+        (goto-line (read-number "Goto line: ")))
+    (linum-mode -1)))
 
-;; 2.Linum: Select lines by clicking
-(defvar *linum-mdown-line* nil)
+; (global-set-key [remap goto-line] 'me/goto-line-with-feedback)
+;; ------------------------------------------------------------------
 
-(defun line-at-click ()
+;; Toggles windows
+;; ------------------------------------------------------------------
+(defun me/toggle-window-split ()
+  "This snippet toggles between horizontal and vertical layout of two windows."
+  (interactive)
+  (if (= (count-windows) 2)
+      (let* ((this-win-buffer (window-buffer))
+             (next-win-buffer (window-buffer (next-window)))
+             (this-win-edges (window-edges (selected-window)))
+             (next-win-edges (window-edges (next-window)))
+             (this-win-2nd (not (and (<= (car this-win-edges)
+                                         (car next-win-edges))
+                                     (<= (cadr this-win-edges)
+                                         (cadr next-win-edges)))))
+             (splitter
+              (if (= (car this-win-edges)
+                     (car (window-edges (next-window))))
+                  'split-window-horizontally
+                'split-window-vertically)))
+        (delete-other-windows)
+        (let ((first-win (selected-window)))
+          (funcall splitter)
+          (if this-win-2nd (other-window 1))
+          (set-window-buffer (selected-window) this-win-buffer)
+          (set-window-buffer (next-window) next-win-buffer)
+          (select-window first-win)
+          (if this-win-2nd (other-window 1))))))
+;; ------------------------------------------------------------------
+
+;; Transpose windows
+;; ------------------------------------------------------------------
+(defun me/transpose-windows ()
+  "Transpose your windows, flips a two-window frame, so that left is right, or up is down."
+  (interactive)
+  (cond ((not (> (count-windows)1))
+         (message "You can't rotate a single window!"))
+        (t
+         (setq i 1)
+         (setq numWindows (count-windows))
+         (while  (< i numWindows)
+           (let* (
+                  (w1 (elt (window-list) i))
+                  (w2 (elt (window-list) (+ (% i numWindows) 1)))
+
+                  (b1 (window-buffer w1))
+                  (b2 (window-buffer w2))
+
+                  (s1 (window-start w1))
+                  (s2 (window-start w2))
+                  )
+             (set-window-buffer w1  b2)
+             (set-window-buffer w2 b1)
+             (set-window-start w1 s2)
+             (set-window-start w2 s1)
+             (setq i (1+ i)))))))
+;; ------------------------------------------------------------------
+
+;; Transparency
+;; ------------------------------------------------------------------
+(setq alpha-list '((95 65) (85 55)(65 35) (100 100)))
+(defun me/toggle-loop-transparency ()
+  "Loop setting transparent effect."
+  (interactive)
+  (let ((h (car alpha-list)))  ;; head value will set to
+    ((lambda (a ab)
+       (set-frame-parameter (selected-frame) 'alpha (list a ab))
+       (add-to-list 'default-frame-alist (cons 'alpha (list a ab)))
+       ) (car h) (car (cdr h)))
+    (setq alpha-list (cdr (append alpha-list (list h))))))
+
+(global-set-key (kbd "<C-f11>") 'me/toggle-loop-transparency)
+;; ------------------------------------------------------------------
+
+;; Fullscreen
+;; ------------------------------------------------------------------
+(defun toggle-fullscreen ()
+  "Toggle full screen."
+  (interactive)
+  (set-frame-parameter
+    nil 'fullscreen
+    (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+
+(global-set-key (kbd "<f11>") 'toggle-fullscreen)
+;; ------------------------------------------------------------------
+
+;; Slick Copy/Kill current line (enhanced C-w or M-w)
+;; ------------------------------------------------------------------
+;; If nothing is marked/highlighted, and you copy or cut
+;; (C-w or M-w) then use column 1 to end. No need to "C-a C-k" or "C-a C-w" etc.
+
+(defadvice kill-region (before slick-cut activate compile)
+  "When called interactively with no active region, kill a single line instead."
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (message "Killed line")
+     (list (line-beginning-position) (line-beginning-position 2)))))
+
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region, copy a single line instead."
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (message "Copied line")
+     (list (line-beginning-position) (line-beginning-position 2)))))
+
+; (defun slick-cut (beg end)
+;   "When called interactively with no active region, kill a single line instead."
+;   (interactive
+;    (if mark-active
+;        (list (region-beginning) (region-end))
+;      (message "Killed line")
+;      (list (line-beginning-position) (line-beginning-position 2)))))
+
+; (advice-add 'kill-region :before #'slick-cut)
+
+; (defun slick-copy (beg end)
+;   "When called interactively with no active region, copy a single line instead."
+;   (interactive
+;    (if mark-active
+;        (list (region-beginning) (region-end))
+;      (message "Copied line")
+;      (list (line-beginning-position) (line-beginning-position 2)))))
+
+; (advice-add 'kill-ring-save :before #'slick-copy)
+;; ------------------------------------------------------------------
+
+;; Search what is selected
+;; ------------------------------------------------------------------
+(defadvice isearch-mode (around isearch-mode-default-string (forward &optional regexp op-fun recursive-edit word-p) activate)
+  "When word is selected, search the selected word."
+  (if (and transient-mark-mode mark-active (not (eq (mark) (point))))
+      (progn
+        (isearch-update-ring (buffer-substring-no-properties (mark) (point)))
+        (deactivate-mark)
+        ad-do-it
+        (if (not forward)
+            (isearch-repeat-backward)
+          (goto-char (mark))
+          (isearch-repeat-forward)))
+    ad-do-it))
+;; ------------------------------------------------------------------
+
+;; Mark Current Word
+;; ------------------------------------------------------------------
+;; We use these for word finding, since the built-in word functions do
+;; not include -_. which is annoying, that is we (re-)define word here independent of syntax table.
+(defun me/beginning-of-symbol (&optional arg)
+  (interactive)
+  (backward-word)
+  (while (looking-back "[-_\.]")
+    (backward-word)))
+
+(defun me/end-of-symbol (&optional arg)
+  (interactive)
+  (forward-word)
+  (while (looking-at "[-_\.]")
+    (forward-word)))
+
+(defun me/mark-word()
+  "Mark current word."
+  (interactive)
+  (me/beginning-of-symbol)
+  (set-mark-command nil)
+  (me/end-of-symbol)
+  (setq deactivate-mark nil))
+
+(global-set-key [remap mark-word] 'me/mark-word) ;; default key M-@
+;; ------------------------------------------------------------------
+
+;; Mark Current Line
+;; ------------------------------------------------------------------
+;; If there's already a selection, extend selection downward by line.
+;; URL `http://ergoemacs.org/emacs/modernization_mark-word.html'
+(defun me/mark-current-line ()
+  "Select current line."
+  (interactive)
+  (end-of-line)
+  (set-mark (line-beginning-position)))
+
+(defun me/mark-line ()
+  "Select current line. If region is active, extend selection downward by line."
+  (interactive)
+  (if (region-active-p)
+      (progn
+        (forward-line 1)
+        (end-of-line))
+    (me/mark-current-line)))
+
+(global-set-key (kbd "C-S-l") 'me/mark-line)
+;; ------------------------------------------------------------------
+
+;; Duplicate current Line or Region
+;; ------------------------------------------------------------------
+(defun me/duplicate-line (&optional stay)
+  "Duplicate current line. With optional argument STAY true, leave point where it was."
   (save-excursion
-    (let ((click-y (cdr (cdr (mouse-position))))
-      (line-move-visual-store line-move-visual))
-      (setq line-move-visual t)
-      (goto-char (window-start))
-      (next-line (1- click-y))
-      (setq line-move-visual line-move-visual-store)
-      ;; If you are using tabbar substitute the next line with
-      ;; (line-number-at-pos))))
-      (1+ (line-number-at-pos)))))
+    (move-end-of-line nil)
+    (save-excursion
+      (insert (buffer-substring (point-at-bol) (point-at-eol))))
+    (newline))
+  (unless stay
+    (let ((column (current-column)))
+      (forward-line)
+      (forward-char column))))
 
-(defun md-select-linum ()
+(defun me/duplicate-backward ()
+  "Duplicate current line upward or region backward. If region was active, keep it so that the command can be repeated."
   (interactive)
-  (goto-line (line-at-click))
-  (set-mark (point))
-  (setq *linum-mdown-line*
-    (line-number-at-pos)))
+  (if (region-active-p)
+      (let (deactivate-mark)
+        (save-excursion
+          (insert (buffer-substring (region-beginning) (region-end)))))
+    (me/duplicate-line t)))
 
-(defun mu-select-linum ()
+(defun me/duplicate-forward ()
+  "Duplicate current line downward or region forward. If region was active, keep it so that the command can be repeated."
   (interactive)
-  (when *linum-mdown-line*
-    (let (mu-line)
-      ;; (goto-line (line-at-click))
-      (setq mu-line (line-at-click))
-      (goto-line (max *linum-mdown-line* mu-line))
-      (set-mark (line-end-position))
-      (goto-line (min *linum-mdown-line* mu-line))
-      (setq *linum-mdown*
-    nil))))
+  (if (region-active-p)
+      (let (deactivate-mark (point (point)))
+        (insert (buffer-substring (region-beginning) (region-end)))
+        (push-mark point))
+    (me/duplicate-line)))
 
-(global-set-key (kbd "<left-margin> <down-mouse-1>") 'md-select-linum)
-(global-set-key (kbd "<left-margin> <mouse-1>") 'mu-select-linum)
-(global-set-key (kbd "<left-margin> <drag-mouse-1>") 'mu-select-linum)
-
-;; 3.Linum: highlight the current line number
-(require 'linum)
-(defvar linum-current-line 1 "Current line number.")
-(defvar linum-border-width 1 "Border width for linum.")
-
-(defface linum-current-line
-  `((t :inherit linum
-       :foreground "goldenrod"
-       :weight bold
-       ))
-  "Face for displaying the current line number."
-  :group 'linum)
-
-(defadvice linum-update (before advice-linum-update activate)
-  "Set the current line."
-  (setq linum-current-line (line-number-at-pos)
-        ;; It's the same algorithm that linum dynamic. I only had added one
-        ;; space in front of the first digit.
-        linum-border-width (number-to-string
-                            (+ 1 (length
-                                  (number-to-string
-                                   (count-lines (point-min) (point-max))))))))
-
-(defun linum-highlight-current-line (line-number)
-  "Highlight the current LINE-NUMBER using 'linum-current-line' face."
-  (let ((face (if (= line-number linum-current-line)
-                  'linum-current-line
-                'linum)))
-    (propertize (format (concat "%" linum-border-width "d") line-number)
-                'face face)))
-
-(setq linum-format 'linum-highlight-current-line)
-
-;; 4.Linum: Separating line numbers from text
+; (global-set-key (kbd "<M-S-up>") 'me/duplicate-backward)
+(global-set-key (kbd "C-M-l") 'me/duplicate-forward)
 ;; ------------------------------------------------------------------
 
-;; Revert buffers
+;; Kill to the beginning of the line
 ;; ------------------------------------------------------------------
-(defun revert-all-buffers ()
-  "Refreshes all open buffers from their respective files."
+(defun me/backward-kill-line (arg)
+  "Kill ARG lines backward, kill the text from the point to the beginning of the line."
+  (interactive "p")
+  (kill-line (- 1 arg))
+  (indent-according-to-mode))
+
+(global-set-key (kbd "C-<backspace>") 'me/backward-kill-line) ;; or "C-S-k"
+;; ------------------------------------------------------------------
+
+;; Enable Emacs column selection using mouse
+;; ------------------------------------------------------------------
+(defun me/mouse-start-rectangle (start-event)
+  (interactive "e")
+  (deactivate-mark)
+  (mouse-set-point start-event)
+  (rectangle-mark-mode +1)
+  (let ((drag-event))
+    (track-mouse
+      (while (progn
+               (setq drag-event (read-event))
+               (mouse-movement-p drag-event))
+        (mouse-set-point drag-event)))))
+
+(global-set-key (kbd "S-<down-mouse-1>") 'me/mouse-start-rectangle)
+;; ------------------------------------------------------------------
+
+;; Prompt before closing Emacs
+;; ------------------------------------------------------------------
+(defun me/ask-before-closing ()
+  "Ask whether or not to close, and then close if y was pressed."
   (interactive)
-  (dolist (buf (buffer-list))
-    (with-current-buffer buf
-      (when (and (buffer-file-name) (not (buffer-modified-p)))
-        (revert-buffer t t t) )))
-  (message "Refreshed open files."))
+  (if (y-or-n-p (format "Are you sure you want to exit Emacs? "))
+      (if (< emacs-major-version 22)
+      (save-buffers-kill-terminal)
+    (save-buffers-kill-emacs))
+    (message "Exit canceled")))
+(global-set-key (kbd "C-x C-c") 'me/ask-before-closing)
 ;; ------------------------------------------------------------------
 
-;; Search all open buffers
-;; ------------------------------------------------------------------
-(defun search (regexp)
-  "Search all buffers for a REGEXP."
-  (interactive "sRegexp to search for: ")
-  (multi-occur-in-matching-buffers ".*" regexp))
-; (global-set-key (kbd "C-c o") 'multi-occur-in-matching-buffers)
-;; ------------------------------------------------------------------
-
-;; Nuke-all-buffers
-;; ------------------------------------------------------------------
-(defun nuke-all-buffers ()
-  "Kill all buffers, leaving *scratch* only."
-  (interactive)
-  (mapc (lambda (x) (kill-buffer x)) (buffer-list)) (delete-other-windows))
-;; ------------------------------------------------------------------
-
-;; Kill all other buffers
-;; ------------------------------------------------------------------
-;; kills all buffers, except the current one.
-(defun kill-all-other-buffers ()
-  "Kill all other buffers."
-  (interactive)
-  (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
-;; ------------------------------------------------------------------
-
-;; word lookup
-;; ------------------------------------------------------------------
-(defun lookup-word-definition ()
-  "Look up the current word's definition in a browser. If a region is active (a phrase), lookup that phrase."
-  (interactive)
-  (let (myWord myUrl)
-    (setq myWord
-          (if (region-active-p)
-              (buffer-substring-no-properties (region-beginning) (region-end))
-            (thing-at-point 'symbol)))
-
-    (setq myWord (replace-regexp-in-string " " "%20" myWord))
-    ;; url: http://www.bing.com/dict/search?mkt=zh-cn&q=
-    (setq myUrl (concat "http://www.bing.com/dict/search?mkt=zh-cn&q=" myWord))
-
-    (browse-url myUrl)
-    ;; (w3m-browse-url myUrl)  ;; if you want to browse using w3m
-    ))
-(global-set-key (kbd "<C-f1>") 'lookup-word-definition)
-;; ------------------------------------------------------------------
-
-;; popup-shell
-;; ------------------------------------------------------------------
-(defvar th-shell-popup-buffer nil)
-
-(defun th-shell-popup ()
-  "Toggle a shell popup buffer with the current file's directory as cwd."
-  (interactive)
-  (unless (buffer-live-p th-shell-popup-buffer)
-    (save-window-excursion (shell "*Popup Shell*"))
-    (setq th-shell-popup-buffer (get-buffer "*Popup Shell*")))
-  (let ((win (get-buffer-window th-shell-popup-buffer))
-        (dir (file-name-directory (or (buffer-file-name)
-                                      ;; dired
-                                      dired-directory
-                                      ;; use HOME
-                                      "~/"))))
-    (if win
-        (quit-window nil win)
-      (pop-to-buffer th-shell-popup-buffer nil t)
-      (comint-send-string nil (concat "cd " dir "\n")))))
-
-(global-set-key (kbd "<C-f2>") 'th-shell-popup)
-;; ------------------------------------------------------------------
-
-;; insert-markdown-inline-math-block
-;; ------------------------------------------------------------------
-;; I sometimes use a specialized markdown format, where inline math-blocks can be
-;; achieved by surrounding a LaTeX formula with $math$ and $/math$. Writing these out
-;; became tedious, so I wrote a small function.
-
-(defun insert-markdown-inline-math-block ()
-  "Inserts an empty math-block if no region is active, otherwise wrap a math-block around the region."
-  (interactive)
-  (let* ((beg (region-beginning))
-         (end (region-end))
-         (body (if (region-active-p) (buffer-substring beg end) "")))
-    (when (region-active-p)
-      (delete-region beg end))
-    (insert (concat "$math$ " body " $/math$"))
-    (search-backward " $/math$")))
-
-;; Most of my writing in this markup is in Norwegian, so the dictionary is set accordingly.
-;; The markup is also sensitive to line breaks, so auto-fill-mode is disabled.
-;; Of course we want to bind our lovely function to a key!
-(add-hook 'markdown-mode-hook
-  (lambda ()
-    (auto-fill-mode 0)
-    (visual-line-mode 1)
-    (ispell-change-dictionary "norsk")
-    (local-set-key (kbd "C-c m b") 'insert-markdown-inline-math-block)) t)
-;; ------------------------------------------------------------------
-
-;; Occur
-;; ------------------------------------------------------------------
-;; Occur is awesome. Do M-s o to search for a word in current buffer and show list of all occurrences in a separate buffer.
-;; M-x   multi-occur-in-matching-buffers
-;; is where the real power is, since this lets you search all open buffers matching the
-;; regexp you give it, and show hits in a new buffer, which behaves just like the compile buffer.
-
-; (eval-when-compile (require 'cl))
-
-(defun get-buffers-matching-mode (mode)
-  "Return a list of buffers where their 'major-mode' is equal to MODE."
-  (let ((buffer-mode-matches '()))
-    (dolist (buf (buffer-list))
-      (with-current-buffer buf
-        (if (eq mode major-mode)
-            (add-to-list 'buffer-mode-matches buf))))
-    buffer-mode-matches))
-
-(defun multi-occur-in-this-mode ()
-  "Show all lines matching REGEXP in buffers with this major mode."
-  (interactive)
-  (multi-occur
-    (get-buffers-matching-mode major-mode)
-    (car (occur-read-primary-args))))
-; (global-set-key (kbd "C-<f4>") 'multi-occur-in-this-mode)
-;; ------------------------------------------------------------------
-
-;; 拷贝代码自动格式化
+;; Auto formatting copied code
 ;; ------------------------------------------------------------------
 (dolist (command '(yank yank-pop))
  (eval
-  `(defadvice ,command (after indent-region activate)
+   `(defadvice ,command (after indent-region activate)
  (and (not current-prefix-arg)
   (member major-mode
    '(c-mode
@@ -1356,114 +1627,46 @@
   (indent-region (region-beginning) (region-end) nil))))))
 ;; ------------------------------------------------------------------
 
-;; Transparency
-;; ------------------------------------------------------------------
-; (set-frame-parameter (selected-frame) 'alpha '(95 . 50))
-; (add-to-list 'default-frame-alist '(alpha . (95 . 50)))
-
-; (defun toggle-transparency ()
-;     (interactive)
-;     (let ((alpha (frame-parameter nil 'alpha)))
-;       (set-frame-parameter
-;   nil 'alpha
-;       (if (eql (cond ((numberp alpha) alpha)
-;            ((numberp (cdr alpha)) (cdr alpha))
-;            ;; Also handle undocumented (<active> <inactive>) form.
-;            ((numberp (cadr alpha)) (cadr alpha)))
-;          100)
-;     '(95 . 50) '(100 . 100)))))
-; (global-set-key (kbd "C-c C-t") 'toggle-transparency)
-;; ------------------------------------------------------------------
-
-;; Prompt before closing Emacs
-;; ------------------------------------------------------------------
-;; http://nileshk.com/2009/06/13/prompt-before-closing-emacs.html.
-; (defun ask-before-closing ()
-;   "Ask whether or not to close, and then close if y was pressed."
-;   (interactive)
-;   (if (y-or-n-p (format "Are you sure you want to exit Emacs? "))
-;       (if (< emacs-major-version 22)
-;       (save-buffers-kill-terminal)
-;     (save-buffers-kill-emacs))
-;     (message "Exit canceled")))
-; (global-set-key (kbd "C-x C-c") 'ask-before-closing)
-;; ------------------------------------------------------------------
-
 
 ;; ==================================================================
 ;; KEYMAPS CONFIGURATION
 ;; ==================================================================
 
-;; Basic Shortcut - CONFIG
-;; ------------------------------------------------------------------
+;; Join adjacent two lines (with the next line)
+(global-set-key (kbd "C-S-j") (lambda () (interactive) (join-line -1)))
 
-(defalias 'yes-or-no-p 'y-or-n-p)  ;; Type y/n instead of yes/no
-
-;; Use Alt-SPC to set-mark, not the default C-@
-(global-set-key (kbd "M-<SPC>") 'set-mark-command)
-
-;; Use Ctrl-Wheel to change the text font size, for Windows.
-(global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
-(global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
-
-;; Set C-> to switch/toggle between windows, the default is C-x-o.
-(global-set-key (kbd "C->") 'other-window)
-
-;; 设置 Ctrl-Enter 在当前行下方插入新行
-(global-set-key (kbd "C-<return>")
-    '(lambda ()
-        (interactive)
-        (move-end-of-line 1)
-        (newline)))
-
-;; 设置 Ctrl-Shift-Enter 在当前行上方插入新行
-(global-set-key (kbd "C-S-<return>")
-    '(lambda ()
-        (interactive)
-        (move-beginning-of-line 1)
-        (open-line 1)))
-
-;; Ctrl-Tab, word-completion, hippie-expand
-; (global-set-key [(control tab)] 'hippie-expand)
+;; Scroll a line up/down at a time
+(global-set-key (kbd "M-<up>")   (lambda () (interactive) (scroll-down 1)))
+(global-set-key (kbd "M-<down>") (lambda () (interactive) (scroll-up 1)))
 
 ;; A better C-h i is C-h C-i which has tab compleation on info sections
 (define-key 'help-command (kbd "C-i") 'info-display-manual)
 
-;; Programing Shortcut - CONFIG
-;; ------------------------------------------------------------------
-
-; (setq-default compile-command "make")
-(global-set-key [f5] 'compile)              ;; 编译
-; (global-set-key [f6] 'speedbar)           ;; 打开 speedbar
-
-(global-set-key [f8] 'gdb)                  ;; 启动gdb
-(global-set-key [C-f8] 'gdb-many-windows)   ;; 启动窗口gdb
-
+(global-set-key [f5] 'compile)              ;; compile
+(global-set-key [f8] 'gdb)                  ;; start gdb
+(global-set-key [C-f8] 'gdb-many-windows)   ;; start multi-windows gdb
 ; (global-set-key [f9] 'previous-error)
 ; (global-set-key [f10] 'next-error)
 
-;; Global key-bindings - CONFIG
+;; Use Ctrl-Wheel to change the text font size, for Windows.
+; (global-set-key (kbd "<C-wheel-up>") 'text-scale-increase)
+; (global-set-key (kbd "<C-wheel-down>") 'text-scale-decrease)
+
+(global-set-key (kbd "C-x w") 'write-region)  ;; save marked region as a file
+; (global-set-key (kbd "<C-f11>") 'toggle-truncate-lines)  ;; line wrapping on/off
+
+;; User-defined Key
+(global-set-key (kbd "C-S-x") 'kill-region)    ;; Cut   same as C-w
+(global-set-key (kbd "C-S-c") 'kill-ring-save) ;; Copy  same as M-w
+(global-set-key (kbd "C-S-v") 'yank)           ;; Past  same as C-y
+
+(global-set-key (kbd "M-p") 'backward-paragraph)
+(global-set-key (kbd "M-n") 'forward-paragraph)
+
+
 ;; ------------------------------------------------------------------
-
-(global-set-key (kbd "C-x w") 'write-region)   ;; save marked region as a file
-
-(global-set-key "\C-ci" 'indent-region)          ;;Indent row/marked region
-; (global-set-key "\C-ca" 'mark-whole-buffer)      ;;same as C-x h
-; (global-set-key "\C-ct" 'untabify)               ;;replace all evil TAB to SPC nice!
-
-
-; (global-set-key (kbd "<f7>")  'toggle-truncate-lines)       ;; line wrapping on/off
-; (global-set-key (kbd "<f8>")  'comment-or-uncomment-region) ;; comment/un-comment region
-
-
-(message "Configuration file read to end!")
-(message (concat "/**/: emacs init time, "  ;; show the startup time.
-    (substring (emacs-init-time)) "."))
+;; Message show the startup time
+(message (concat "Configuration file read to end!\n=> Emacs init time, "
+  (substring (emacs-init-time) 0 10) "."))
 )
-
-;; ==================================================================
-;; THE END!
-;; ==================================================================
-
-; (provide 'init)
 ;;; init.el ends here
