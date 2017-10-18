@@ -5,7 +5,6 @@ A simple Emacs configuration project.
 ## Features
 
 
-
 ## Installation
 
 You can install jleafy-emacs via the command line:
@@ -15,33 +14,38 @@ git clone http://github.com/Jleafy/jleafy-emacs.git .emacs.d
 
 ## List of Tools
 
-
-### better-defaults
-
-### molokai-theme
-
+### use-package
 
 ### smex
-
-### tabbar
-
+### ivy
+### yasnippets
+### flycheck
+### auto-complete
 ### autopair
 
-### ivy
+### multiple-cursors
+### sr-speedbar
+### highlight-symbol
+### which-key
+### indent-guide
+### undo-tree
+### browse-kill-ring
+### volatile-highlights
+### benchmark-init
 
-### yasnippets
+### expand-region
+### anzu
 
-### auto-complete
-
-
+### auctex
 ### markdown-mode
-
-### anaconda-mode
-
-### flycheck
+### pylint
+### matlab-mode
+### cmake-mode
 
 
 ## Tips
+
+### User-defined Keymap
 
 
 ## Report bug
