@@ -554,7 +554,7 @@
    ("C-c m a" . mc/edit-beginnings-of-lines)
    ("C-c m e" . mc/edit-ends-of-lines)
    ("C-'" . mc-hide-unmatched-lines-mode)
-   ("M-<mouse-1>" . mc/add-cursor-on-click)))
+   ("C-M-<mouse-1>" . mc/add-cursor-on-click)))
 
 ;;; sr-speedbar
 (use-package sr-speedbar
