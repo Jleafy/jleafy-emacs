@@ -546,15 +546,15 @@
     mc/edit-lines-empty-lines 'ignore
     mc/insert-numbers-default 1)
   :bind
-  (("C-S-<mouse-1>" . mc/add-cursor-on-click)
-   ("C-S-d" . mc/mark-next-like-this-word)
+  (("C-S-d" . mc/mark-next-like-this-word)
    ("M-S-<down>" . mc/mark-next-like-this)
    ("M-S-<up>" . mc/mark-previous-like-this)
    ("C-c m r" . set-rectangular-region-anchor)
    ("C-c m c" . mc/edit-lines)
    ("C-c m a" . mc/edit-beginnings-of-lines)
    ("C-c m e" . mc/edit-ends-of-lines)
-   ("C-'" . mc-hide-unmatched-lines-mode)))
+   ("C-'" . mc-hide-unmatched-lines-mode)
+   ("M-<mouse-1>" . mc/add-cursor-on-click)))
 
 ;;; sr-speedbar
 (use-package sr-speedbar
@@ -1633,7 +1633,7 @@
 ;; ==================================================================
 
 ;; Join adjacent two lines (with the next line)
-(global-set-key (kbd "C-S-j") (lambda () (interactive) (join-line -1)))
+(global-set-key (kbd "C-^") (lambda () (interactive) (join-line -1)))
 
 ;; Scroll a line up/down at a time
 (global-set-key (kbd "M-<up>")   (lambda () (interactive) (scroll-down 1)))
