@@ -114,7 +114,7 @@ Keybinding             | Description
 <kbd>C-c m a</kbd>     | multiple-cursors (`mc/edit-beginnings-of-lines`).
 <kbd>C-c m e</kbd>     | multiple-cursors (`mc/edit-ends-of-lines`).
 <kbd>C-'</kbd>         | multiple-cursors (`mc-hide-unmatched-lines-mode`).
-<kbd>M-Mouse1</kbd>    | multiple-cursors (`mc/add-cursor-on-click`).
+<kbd>C-M-Mouse1</kbd>  | multiple-cursors (`mc/add-cursor-on-click`).
 <kbd>C-F3</kbd>        | highlight-symbol (`highlight-symbol`).
 <kbd>F3</kbd>          | highlight-symbol (`highlight-symbol-next`).
 <kbd>S-F3</kbd>        | highlight-symbol (`highlight-symbol-prev`).
