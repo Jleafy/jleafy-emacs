@@ -8,7 +8,7 @@ A simple Emacs configuration project.
 ### Installation
 
 You can install jleafy-emacs via the command line:
-> cd ~;
+> cd ~
 > git clone http://github.com/Jleafy/jleafy-emacs.git .emacs.d
 
 ### List of Used Tools
@@ -19,14 +19,13 @@ You can install jleafy-emacs via the command line:
 
 - [**ivy**](https://github.com/abo-abo/swiper): A generic completion frontend for Emacs, similar to ido or helm.
 
-- [**yasnippets**](https://github.com/joaotavora/yasnippet): A template system for Emacs, which allows you to type an abbreviation and automatically expand it into function templates.
+- [**autopair**](https://github.com/joaotavora/autopair): Automagically pair braces and quotes in emacs like TextMate.
 
 - [**flycheck**](https://github.com/flycheck/flycheck/): On the fly syntax checking for GNU Emacs.
 
 - [**auto-complete**](https://github.com/auto-complete/auto-complete): An Intelligent auto-completion extension for Emacs.
 
-- [**autopair**](https://github.com/joaotavora/autopair): Automagically pair braces and quotes in emacs like TextMate.
-
+- [**yasnippets**](https://github.com/joaotavora/yasnippet): A template system for Emacs, which allows you to type an abbreviation and automatically expand it into function templates.
 
 - [**multiple-cursors**](https://github.com/magnars/multiple-cursors.el): Multiple cursors for emacs.
 
@@ -36,25 +35,25 @@ You can install jleafy-emacs via the command line:
 
 - [**which-key**](https://github.com/justbur/emacs-which-key#which-key): Emacs package that displays available keybindings in popup.
 
-- [**indent-guide**](https://github.com/zk-phi/indent-guide): Show vertical lines to guide indentation.
-
 - [**undo-tree**](https://github.com/emacsmirror/undo-tree): Treat undo history as a tree.
 
-- [**browse-kill-ring**](https://github.com/browse-kill-ring/browse-kill-ring): For when 'C-y M-y M-y M-y' gets you down, interactively insert items from kill-ring.
+- [**indent-guide**](https://github.com/zk-phi/indent-guide): Show vertical lines to guide indentation.
 
 - [**volatile-highlights**](https://github.com/k-talo/volatile-highlights.el): Minor mode for visual feedback on some operations in Emacs.
 
-- [**benchmark-init**](https://github.com/dholm/benchmark-init-el): Benchmark your Emacs initialization, which can be used to keep track of where time is being spent during Emacs startup in order to optimize startup times.
-
-- [**expand-region**](https://github.com/magnars/expand-region.el): Emacs extension to increase selected region by semantic units.
-
 - [**anzu**](https://github.com/syohex/emacs-anzu): Provides a minor mode which displays current match and total matches information in the mode-line in various search modes.
 
-- [**auctex**](http://www.gnu.org/software/auctex/): AUCTEX is an extensible package for writing and formatting TEX files in GNU Emacs and XEmacs.
+- [**browse-kill-ring**](https://github.com/browse-kill-ring/browse-kill-ring): For when 'C-y M-y M-y M-y' gets you down, interactively insert items from kill-ring.
+
+- [**benchmark-init**](https://github.com/dholm/benchmark-init-el): Benchmark your Emacs initialization, which can be used to keep track of where time is being spent during Emacs startup in order to optimize startup times.
 
 - [**markdown-mode**](https://github.com/defunkt/markdown-mode): A major mode for editing Markdown-formatted text.
 
 - [**pylint**](https://www.pylint.org/): Syntax checker for python.
+
+- [**go-mode**](https://github.com/dominikh/go-mode.el): Emacs mode for the Go programming language.
+
+- [**auctex**](http://www.gnu.org/software/auctex/): AUCTEX is an extensible package for writing and formatting TEX files in GNU Emacs and XEmacs.
 
 ### Tips
 
@@ -65,12 +64,10 @@ You can install jleafy-emacs via the command line:
 Keybinding             | Description
 -----------------------|------------------------------------------------------------
 <kbd>M-/</kbd>         | Run `hippie-expand` (a replacement for the default `dabbrev-expand`).
-<kbd>C-F12</kbd>       | `me/open-init-file`
-<kbd>C-x t</kbd>       | `me/insert-current-time`
-<kbd>C-x d</kbd>       | `me/insert-current-date`
+<kbd>C-c C-t</kbd>     | Insert current time (`me/time-current`).
+<kbd>C-c C-d</kbd>     | Insert current date (`me/date-current`).
 <kbd>C-F1</kbd>        | Lookup word online (`me/lookup-word-definition`).
-<kbd>C-F2</kbd>        | Open popup shell (`me/shell-popup`).
-<kbd>C-M-F3</kbd>      | Multi occur, just like M-s o (`me/multi-occur-in-this-mode`).
+<kbd>C-M-F3</kbd>      | Multi occur, just like `M-s o` (`me/multi-occur-in-this-mode`).
 <kbd>M-[</kbd>         | Unindent region (`me/untab-region`).
 <kbd>M-]</kbd>         | Indent region (`me/tab-region`).
 <kbd>M-;</kbd>         | Comment Enhanced (`me/enhance-comment-dwim-line`).
@@ -92,6 +89,7 @@ Keybinding             | Description
 <kbd>C-F8</kbd>        | Start multi-windows gdb (`gdb-many-windows`).
 <kbd>C-h C-i</kbd>     | A better C-h i (`info-display-manual`).
 <kbd>C-x w</kbd>       | Save marked region as a file (`write-region`).
+<kbd>C-F12</kbd>       | Line wrapping on/off (`toggle-truncate-lines`).
 <kbd>C-S-x</kbd>       | Cut, same as C-w (`kill-region`).
 <kbd>C-S-c</kbd>       | Copy, same as M-w (`kill-ring-save`).
 <kbd>C-S-v</kbd>       | Past, same as C-y (`yank`).
@@ -102,8 +100,8 @@ Keybinding             | Description
 
 Keybinding             | Description
 -----------------------|------------------------------------------------------------
-<kbd>C-x C-r</kbd>     | recentf (`recentf-open-files`).
 <kbd>C-x C-j</kbd>     | dires-x (`dired-jump`).
+<kbd>C-c C-r</kbd>     | recentf (`recentf-open-files`).
 <kbd>C-Tab</kbd>       | auto-complete (`auto-complete`).
 <kbd>F6</kbd>          | sr-speedbar (`sr-speedbar-toggle`).
 <kbd>C-S-d</kbd>       | multiple-cursors (`mc/mark-next-like-this-word`).
@@ -113,14 +111,11 @@ Keybinding             | Description
 <kbd>C-c m c</kbd>     | multiple-cursors (`mc/edit-lines`).
 <kbd>C-c m a</kbd>     | multiple-cursors (`mc/edit-beginnings-of-lines`).
 <kbd>C-c m e</kbd>     | multiple-cursors (`mc/edit-ends-of-lines`).
-<kbd>C-'</kbd>         | multiple-cursors (`mc-hide-unmatched-lines-mode`).
-<kbd>C-M-Mouse1</kbd>  | multiple-cursors (`mc/add-cursor-on-click`).
+<kbd>M-Mouse1</kbd>    | multiple-cursors (`mc/add-cursor-on-click`).
 <kbd>C-F3</kbd>        | highlight-symbol (`highlight-symbol`).
 <kbd>F3</kbd>          | highlight-symbol (`highlight-symbol-next`).
 <kbd>S-F3</kbd>        | highlight-symbol (`highlight-symbol-prev`).
 <kbd>M-F3</kbd>        | highlight-symbol (`highlight-symbol-query-replace`).
-<kbd>C-+</kbd>         | expand-region (`er/contract-region`).
-<kbd>C-=</kbd>         | expand-region (`er/expand-region`).
 <kbd>M-%</kbd>         | anzu (`anzu-query-replace`).
 <kbd>C-M-%</kbd>       | anzu (`anzu-query-replace-regexp`).
 <kbd>C-c l</kbd>       | org-mode (`org-store-link`).
