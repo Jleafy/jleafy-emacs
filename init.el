@@ -1,10 +1,10 @@
 ;;; init.el --- My Emacs configuration
 
 ;; Author: Jleafy
-;; Date: 2017-11-06
-;; Version: 0.2.2
+;; Date: 2017-11-25
+;; Version: 0.2.3
 ;; From: http://home.thep.lu.se/~karlf/emacs.html
-;; Time-stamp: <Last changed 2017-11-06 10:27:41 by Jleafy, Jleafy>
+;; Time-stamp: <Last changed 2017-11-25 12:46:54 by Jleafy, Jleafy>
 
 ;;; Commentary:
 ;; Following lines load an Org file and build the configuration code out of it.
@@ -12,15 +12,7 @@
 ;;; Code:
 
 
-; (let ((gc-cons-threshold most-positive-fixnum))
-(let ((file-name-handler-alist nil))
-
-;; Garbage-collect on focus-out, Emacs should feel snappier.
-; (setq gc-cons-threshold 100000000)
-(setq gc-cons-threshold most-positive-fixnum)
-
 (message "Reading configuration file ...")
-
 
 ;; ------------------------------------------------------------------
 ;; => Basic UI
@@ -36,58 +28,16 @@
 ; (setq initial-frame-alist (quote ((fullscreen . maximized))))  ;; fullscreen on Windows
 
 ;; Font
-(when (display-graphic-p)
-  (defconst en-font-size 14)
-  (defconst en-font-list
-    '("Consolas"
-      "Courier New"
-      "DejaVu Sans Mono"
-      "Bitstream Vera Sans Mono"))
-  (defconst cn-font-size 14)
-  (defconst cn-font-list
-    '("Microsoft Yahei"
-      "WenQuanYi Micro Hei Mono"
-      "WenQuanYi Zen Hei Mono"
-      "Courier New"))
-  (defun find-font (fonts)
-    (catch 'return
-      (dolist (ft fonts)
-    (if (x-list-fonts ft)
-        (throw 'return ft)))))
-  (defun set-font (font size lang)
-    (pcase lang
-      (`en (set-default-font (format "%s-%s" font size)))
-      (`cn (set-fontset-font t 'han (format "%s-%s" font size)))
-      (lang (message "Unknow lang %s" lang))))
-  (set-font (find-font en-font-list) en-font-size 'en)
-  (set-font (find-font cn-font-list) cn-font-size 'cn))
+(set-default-font "Consolas 13")
+(set-fontset-font "fontset-default" 'chinese-gbk "Microsoft Yahei")
+(setq face-font-rescale-alist '(("Microsoft Yahei" . 1.1) ("宋体" . 1.2)))
 
 ;; Theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
-(load-theme 'atom-one-dark t)
-; (load-theme 'smyx t)
-; (load-theme 'Amelie t)
-; (load-theme 'dracula t)
-; (load-theme 'idea-darkula t)
-; (load-theme 'flatland t)
-; (load-theme 'seti t)
-; (load-theme 'subdued t)
-; (load-theme 'twilight t)
-; (load-theme 'tangotango t)
-; (load-theme 'zenburn t)
-
-;; White theme
-; (load-theme 'FlatUI t)
-; (load-theme 'github t)
-; (load-theme 'github-modern t)
-; (load-theme 'material-light t)
-
-; Here's list of emacs 24.3 themes.
-; (load-theme 'deeper-blue)
-; adwaita       -- white
-; dichromacy    -- white
-; whiteboard    -- white
-; deeper-blue
+; (load-theme 'atom-one-dark t)
+; (load-theme 'molokai t)
+;; dark theme: atom-one-dark, smyx, molokai, Amelie, dracula, idea-darkula, seti, subdued, twilight, tangotango, zenburn.
+;; white theme: FlatUI, github, github-modern, material-light
 
 
 ;; ------------------------------------------------------------------
@@ -102,17 +52,27 @@
 (setq command-line-default-directory "~/Desktop/")
 
 ;; load file and path
-(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+; (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
-;; Load .custom.el
-(setq-default custom-file (expand-file-name ".custom.el" user-emacs-directory))
-(when (file-exists-p custom-file)
-  (load custom-file))
+;; keep emacs Custom-settings in separate file
+(setq custom-file (expand-file-name ".custom.el" user-emacs-directory))
+(load custom-file 'noerror)
 
-;; Make directory tmp
-(defvar tmp-directory (concat user-emacs-directory "tmp"))
-(if (not (file-exists-p tmp-directory))
-    (make-directory tmp-directory t))
+
+;; ------------------------------------------------------------------
+;; => Optimization
+;; ------------------------------------------------------------------
+
+;; Garbage-collect on focus-out, Emacs should feel snappier.
+; (setq gc-cons-threshold 100000000)
+(setq gc-cons-threshold most-positive-fixnum)
+
+;; Start server
+;; Windows platform Emacs single instance settings and right-click menu added
+;; "D:\Tools\emacs\bin\emacsclientw.exe" --no-wait --alternate-editor="D:\Tools\emacs\bin\runemacs.exe" "%1"
+(require 'server)
+(unless (server-running-p)
+  (server-start))
 
 
 ;; ------------------------------------------------------------------
@@ -120,70 +80,65 @@
 ;; ------------------------------------------------------------------
 ;;; Here are what I consider better defaults as per my own experience.
 (setq-default
-  ; blink-cursor-mode 0                         ;; Disable the cursor blinking
-  ; left-margin-width 1 right-margin-width 1    ;; Add left and right margins
   ad-redefinition-action 'accept              ;; Silence warnings for redefinition
-  column-number-mode t                        ;; Show colum number on minibuffer
-  cursor-in-non-selected-windows t            ;; Hide the cursor in inactive windows
-  cursor-type '(bar . 1)                      ;; Modify the cursor style
   delete-by-moving-to-trash t                 ;; Delete files to trash
   echo-keystrokes 0.3                         ;; Echo commands I haven't finished quicker than the default of 1 second
   fill-column 80                              ;; Set width for automatic line breaks
   help-window-select t                        ;; Focus new help windows when opened
-  indent-tabs-mode nil                        ;; Stop using tabs to indent
   inhibit-startup-screen t                    ;; Disable start-up screen
   kill-whole-line t                           ;; Kill whole line when used C-k at the beginning of a line
-  line-number-mode t                          ;; Show row number on minibuffer
   mode-require-final-newline 'visit           ;; Add a newline at EOF on visit
   mouse-avoidance-mode 'banish                ;; Avoid collision of mouse with point
   mouse-wheel-mode t
   mouse-yank-at-point t                       ;; Yank at point rather than pointer
+  cursor-in-non-selected-windows t            ;; Hide the cursor in inactive windows
+  x-stretch-cursor t                          ;; Stretch cursor to the glyph width
+  ; cursor-type '(bar . 1)                      ;; Modify the cursor style
+  ; blink-cursor-mode 0                         ;; Disable the cursor blinking
+  select-enable-clipboard t                   ;; Merge system's and Emacs' clipboard
   ns-use-srgb-colorspace nil                  ;; Don't use sRGB colors
   recenter-positions '(5 top bottom)          ;; Set re-centering positions
   resize-mini-windows t                       ;; Allow minibuffer auto resize
-  select-enable-clipboard t                   ;; Merge system's and Emacs' clipboard
   sentence-end-double-space nil               ;; End a sentence after a dot and a space
-  show-paren-mode t                           ;; turn on bracket match highlight
-  show-paren-style 'parenthesis
   split-height-threshold nil                  ;; Disable vertical window splitting
   split-width-threshold nil                   ;; Disable horizontal window splitting
-  tab-width 4                                 ;; Set width for tabs
   window-combination-resize t                 ;; Resize windows proportionally
-  x-stretch-cursor t                          ;; Stretch cursor to the glyph width
   message-log-max t)                          ;; Keep message buffer complete
 
 ; (fringe-mode 0)                               ;; Hide fringes
-(delete-selection-mode)                       ;; Replace region when inserting text
-(global-hl-line-mode)                         ;; Hightlight current line
+(delete-selection-mode 1)                     ;; ;; make typing delete/overwrites selected text
+(global-hl-line-mode 1)                       ;; Hightlight current line
 (global-subword-mode)                         ;; Iterate through CamelCase words
-(put 'downcase-region 'disabled nil)          ;; Enable downcase-region
-(put 'upcase-region 'disabled nil)            ;; Enable upcase-region
 (auto-image-file-mode t)                      ;; Enable to open image
-(electric-indent-mode 1)                      ;; Make Return key also do indent globally
 (file-name-shadow-mode t)                     ;; Be smart about file names in mini buffer
 (global-auto-revert-mode 1)                   ;; Refresh file automatically
 (global-font-lock-mode t)                     ;; Syntax on
 (global-prettify-symbols-mode 1)              ;; Beautify display symbols(elisp), for example, "lambda" show as "λ"
 (transient-mark-mode t)                       ;; Highlight selected region
+(winner-mode 1)                               ;; Allowed use C-c LEFT to undo window configuration changes.
+; (cua-mode 1)                                ;; make {copy, cut, paste, undo} have {C-c, C-x, C-v, C-z} keys.
 
 (setq major-mode 'text-mode)
 (setq next-line-add-newlines nil)             ;; Don't add a newline when the cursor moved to next line
-(setq Man-notify-method 'pushy)               ;; When reading man-doc, use current buffer
 (setq font-lock-maximum-decoration t)         ;; Adds pretty colors.
 (setq read-file-name-completion-ignore-case t);; Ignore case when using completion for file names
 (setq system-uses-terminfo nil)               ;; Fix some weird color escape sequences
-; (setq use-file-dialog nil)
-; (setq use-dialog-box nil)
 ; (setq pop-up-frames t)                      ;; each file opens in a new window
-; (cua-mode 1)                                ;; make {copy, cut, paste, undo} have {C-c, C-x, C-v, C-z} keys.
 
 ;;; yes/no
 (setq confirm-kill-emacs 'yes-or-no-p)        ;; Confirm before exiting Emacs
 (defalias 'yes-or-no-p 'y-or-n-p)             ;; Replace yes/no prompts with y/n
 
 ;;; Line Number
-(global-linum-mode 'linum-mode)               ;; Always show line numbers
-; (setq linum-format " %d ")                    ;; set format
+(global-linum-mode 1)  ;; always show line numbers
+(column-number-mode 1)  ;; show cursor position within line
+; (setq linum-format " %d ")  ;; set format
+
+;;; Bracket match
+(show-paren-mode t)                           ;; turn on bracket match highlight
+(setq show-paren-style 'parenthesis)
+(electric-pair-mode t)                        ;; auto bracket match
+(electric-indent-mode 1)                      ;; Make Return key also do indent globally
 
 ;;; Scroll margin
 (setq-default scroll-step 1 scroll-margin 3 scroll-conservatively 10000)
@@ -192,23 +147,33 @@
 
 ;;; Encoding UTF-8
 ; (set-language-environment "UTF-8")
-(set-default-coding-systems 'utf-8)
-(setq file-name-coding-system 'gbk)
-(set-terminal-coding-system 'utf-8)
+; (set-default-coding-systems 'utf-8)
+; (setq file-name-coding-system 'utf-8)
+; (set-terminal-coding-system 'utf-8)
 
-;;; Title
-(setq frame-title-format "emacs@%b")  ;; show current filename at titlebar
-; (setq frame-title-format '(buffer-file-name "%f" ("%b"))) ;; titlebar =buffer unless filename
-
-;;; Initial Scratch Message
+;;; Title and Initial Scratch Message
+(setq frame-title-format '(buffer-file-name "%f" ("%b")))  ;; titlebar =buffer unless filename
 (setq initial-scratch-message "")  ;; Empty the initial *scratch* buffer
-; (setq initial-scratch-message
-;   (concat ";; scratch buffer created, welcome to "
-;     (substring (emacs-version) 0 16) ".\n"))
 
-;;; Whitespace
+;;; Indent and Tab
+(setq-default indent-tabs-mode nil)  ;; make indentation commands use space only (never tab character)
+(setq tab-width 4)  ;; set current buffer's tab char's display width to 4 spaces
+
+;;; Whitespaces
 (setq-default show-trailing-whitespace t)  ;; Display trailing whitespaces
+(setq-default whitespace-style '(empty tab trailing))
 (add-hook 'before-save-hook 'whitespace-cleanup)
+
+;;; Disable warnings
+(progn
+  ;; stop warning prompt for some commands. There's always undo.
+  (put 'narrow-to-region 'disabled nil)
+  (put 'narrow-to-page 'disabled nil)
+  (put 'upcase-region 'disabled nil)
+  (put 'downcase-region 'disabled nil)
+  (put 'erase-buffer 'disabled nil)
+  (put 'scroll-left 'disabled nil)
+  (put 'dired-find-alternate-file 'disabled nil))
 
 ;;; Show-Time
 (display-time-mode t)
@@ -230,11 +195,6 @@
   uniquify-after-kill-buffer-p t       ;; rename after killing uniquified
   uniquify-ignore-buffers-re "^\\*")   ;; don't muck with special buffers
 
-;;; Save mode-line History
-(savehist-mode t)
-(setq savehist-additional-variables '(search-ring regexp-search-ring))
-(setq savehist-file (expand-file-name "tmp/.savehist" user-emacs-directory))
-
 ;;; Bookmarks
 ;; C-x r m ('make'): create a new bookmark,
 ;; C-x r b ('bookmark'): jump to an existing bookmark,
@@ -242,7 +202,19 @@
 (setq bookmark-save-flag 1)  ;; auto save changes
 (setq bookmark-default-file (expand-file-name "tmp/.bookmarks" user-emacs-directory))
 
+;;; Save mode-line History
+(savehist-mode t)
+(setq savehist-additional-variables '(search-ring regexp-search-ring))
+(setq savehist-file (expand-file-name "tmp/.savehist" user-emacs-directory))
+
+;;; Saveplace
+;; Save point position you previously visited.
+; (setq-default save-place t)
+; (setq save-place-file (expand-file-name "tmp/.places" user-emacs-directory))
+
 ;;; Backup and Auto-save
+(setq make-backup-files nil)  ;; stop creating those backup~ files
+(setq auto-save-default nil)  ;; stop creating those #auto-save# files
 ; (defvar backup-directory (concat user-emacs-directory "tmp/backups"))
 ; (if (not (file-exists-p backup-directory))
 ;     (make-directory backup-directory t))
@@ -256,8 +228,6 @@
 ;       kept-old-versions 5
 ;       delete-old-versions t        ;; delete excess backup files silently
 ;       delete-by-moving-to-trash t)
-(setq make-backup-files nil)         ;; No annoying "~file.txt"
-(setq auto-save-default nil)         ;; no auto saves to #file#
 
 
 ;; ------------------------------------------------------------------
@@ -294,13 +264,12 @@
   (package-install 'use-package))
 
 ;; Enable use-package
-; (eval-when-compile (require 'use-package))
-(require 'use-package)
-(require 'diminish)                ;; if you use :diminish
-(require 'bind-key)                ;; if you use any :bind variant
+(eval-when-compile (require 'use-package))
+; (require 'use-package)
+(require 'diminish)  ;; if you use :diminish
+(require 'bind-key)  ;; if you use any :bind variant
 
 (setq-default
-  ; use-package-verbose t
   ; use-package-always-defer t
   use-package-always-ensure t)
 
@@ -309,44 +278,30 @@
 ;; PLUGINS CONFIGURATION
 ;; ==================================================================
 
-;; molokai-theme-theme
-; (use-package molokai-theme
+; (use-package molokai-theme  ;; molokai-theme
 ;   :init (load-theme 'molokai t))
 
-;; sanityinc-tomorrow-theme
-; (use-package color-theme-sanityinc-tomorrow
+; (use-package color-theme-sanityinc-tomorrow  ;; sanityinc-tomorrow-theme
 ;   :init (load-theme 'sanityinc-tomorrow-night t))
 
-;; spacemacs-theme
-; (use-package spacemacs-theme
+; (use-package spacemacs-theme   ;; spacemacs-theme
 ;   :init (load-theme 'spacemacs-dark t))
 
 ;; Start server
-(use-package server
-  :config
-  (unless (server-running-p)
-    (server-start)))
-
-;; Make directory server
-(defvar server-directory (concat user-emacs-directory "server"))
-(if (not (file-exists-p server-directory))
-  (make-directory server-directory t))
-
-;; Windows platform Emacs single instance settings and right-click menu added
-;; "D:\Tools\emacs\bin\emacsclientw.exe" --no-wait --alternate-editor="D:\Tools\emacs\bin\runemacs.exe" "%1"
-; (require 'server)
-; (unless (server-running-p)
-;   (server-start))
+; (use-package server
+;   :config
+;   (unless (server-running-p)
+;     (server-start)))
 
 
 ;; ------------------------------------------------------------------
 ;; => Built-In Packages
 ;; ------------------------------------------------------------------
-;;; hippie-exp
-(use-package hippie-exp
-  :defer t
-  :config
-  (setq hippie-expand-try-functions-list
+
+;; PLUGINS: hippie-expand
+;; ------------------------------------------------------------------
+(global-set-key (kbd "M-/") 'hippie-expand)
+(setq hippie-expand-try-functions-list
   '(try-expand-line
     try-expand-line-all-buffers
     try-expand-list
@@ -360,133 +315,107 @@
     try-complete-lisp-symbol
     try-complete-lisp-symbol-partially
     try-expand-whole-kill))
-  :bind
-  ("M-/" . hippie-expand))
+; (setq dabbrev-case-replace nil)  ;; preserve case on expand with dabbrev
 
-;;; recentf
-(use-package recentf
-  :defer t
-  :config
-  (recentf-mode 1)
-  (setq recentf-save-file (expand-file-name "tmp/.recentf" user-emacs-directory))
-  (setq-default
-    recentf-max-saved-items 100
-    recentf-exclude '("/tmp/" "/ssh:"))
-    ; recentf-auto-cleanup 600)
-  :bind
-  ("C-c C-r" . recentf-open-files))
+;; PLUGINS: dired/dire-x
+;; ------------------------------------------------------------------
+;; delay dired load
+(with-eval-after-load 'dired
+    (define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file))
 
-;;; saveplace
-(use-package saveplace
-  :defer t
-  :config
-  (setq-default save-place t)
-  (setq save-place-file (expand-file-name "tmp/.places" user-emacs-directory)))
+(setq-default dired-auto-revert-buffer t
+    dired-hide-details-hide-symlink-targets nil
+    dired-listing-switches "-alh"
+    dired-ls-F-marks-symlinks nil
+    ; dired-recursive-deletes 'always
+    dired-recursive-copies 'always)
 
-;;; whitespace
-(use-package whitespace
-  :ensure nil
-  :defer t
-  :config
-  (add-hook 'prog-mode-hook #'whitespace-turn-on)
-  (add-hook 'text-mode-hook #'whitespace-turn-on)
-  (setq-default whitespace-style '(empty tab trailing)))
-
-;;; winner-mode
-;; Turn on winner-mode, which allows me to use C-c LEFT to undo window configuration changes, if so desired.
-(use-package winner
-  :defer t
-  :init
-  (winner-mode 1))
-
-;;; dired/dire-x
-(use-package dired
-  :ensure nil
-  :config
-  (add-hook 'dired-mode-hook #'dired-hide-details-mode)
-  (defadvice dired-readin (after dired-after-updating-hook first () activate)
+;; allows you to copy the contents to the other window when more than two windows are available in a frame.
+(setq dired-dwin-target t)
+; (put 'dired-find-alternate-file 'disabled nil)   ;; set only one buffer for dired mode
+(add-hook 'dired-mode-hook #'dired-hide-details-mode)
+(defadvice dired-readin (after dired-after-updating-hook first () activate)
     "Sort dired listings with directories first before adding marks."
     (save-excursion
       (let (buffer-read-only)
         (forward-line 2)
         (sort-regexp-fields t "^.*$" "[ ]*." (point) (point-max)))
       (set-buffer-modified-p nil)))
-  ; (put 'dired-find-alternate-file 'disabled nil)   ;; set only one buffer for dired mode
-  (setq-default
-    dired-auto-revert-buffer t
-    dired-hide-details-hide-symlink-targets nil
-    dired-listing-switches "-alh"
-    dired-ls-F-marks-symlinks nil
-    ; dired-recursive-deletes 'always
-    dired-recursive-copies 'always))
 
-(use-package dired-x
-  ;; dired-x defined key "C-x C-j" to open the directory of the current file.
-  :ensure nil
-  :preface
-  (defun me/dired-revert-after-command (command &optional output error)
-    (revert-buffer))
-  :config
-  (advice-add 'dired-smart-shell-command :after #'me/dired-revert-after-command))
+;; allows you to use keybindings: C-x C-j to enter the path of current file folder
+; (require 'dired-x)
+
+;; PLUGINS: recentf
+;; ------------------------------------------------------------------
+; (add-hook 'after-init-hook (lambda () (recentf-mode 1)))
+; (setq-default recentf-max-saved-items 100
+;               recentf-exclude '("/tmp/" "/ssh:"))
+; (setq recentf-save-file (expand-file-name "tmp/.recentf" user-emacs-directory))
+
+; (global-set-key "\C-c\ \C-r" 'recentf-open-files)
 
 
 ;; ------------------------------------------------------------------
 ;; => External Packages
 ;; ------------------------------------------------------------------
-;;; smex
-(use-package smex
-  :diminish smex-mode
-  :init
-  (smex-initialize)
-  (setq smex-save-file (expand-file-name "tmp/.smex-items" user-emacs-directory)))
 
-;;; ivy
-(use-package ivy
-  :diminish ivy-mode
+;;; swiper
+(use-package swiper
+  :diminish swiper-mode
+  :defer t
   :init
   (ivy-mode 1)
   :config
-  (setq ivy-use-virtual-buffers t)  ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
-  (setq enable-recursive-minibuffers t)
-  ; (setq ivy-height 10)        ;; number of result lines to display
-  (setq ivy-count-format "")  ;; does not count candidates
-  (setq ivy-display-style 'fancy)
-  (setq ivy-format-function 'ivy-format-function-line) ; Make highlight extend all the way to the right
-  (setq ivy-initial-inputs-alist nil)  ;; no regexp by default
-  ; (setq ivy-initial-inputs-alist '((counsel-M-x . "^") (man . "^") (woman . "^")))
+  (setq-default ivy-use-virtual-buffers t
+    ivy-count-format "%d/%d "
+    ivy-display-style 'fancy
+    enable-recursive-minibuffers t)
+  (setq ivy-format-function 'ivy-format-function-line) ;; Make highlight extend all the way to the right
+
+  ; (setq ivy-initial-inputs-alist nil)  ;; no regexp by default
+  (setq-default ivy-initial-inputs-alist
+      '((counsel-M-x . "^")
+          (man . "^")
+          (woman . "^")))
   ;; configure regexp engine
   (setq ivy-re-builders-alist
-      '((counsel-M-x . ivy--regex-fuzzy) ; Only counsel-M-x use flx fuzzy search
-        (t . ivy--regex-ignore-order)  ; allow input not in order
-        (t . ivy--regex-plus)))
-  (add-hook 'after-init-hook
-    (lambda ()
-      (when (bound-and-true-p ido-ubiquitous-mode)
-          (ido-ubiquitous-mode -1))
-      (when (bound-and-true-p ido-mode)
-          (ido-mode -1))
-          (ivy-mode 1)))
+    '((counsel-M-x . ivy--regex-fuzzy) ;; Only counsel-M-x use flx fuzzy search
+      (t . ivy--regex-ignore-order)  ;; allow input not in order
+      (t . ivy--regex-plus)))
   :bind
-  (:map ivy-minibuffer-map        ; bind in the ivy buffer
-    ("RET" . ivy-alt-done)
-    ("C-!" . ivy-immediate-done)
-    ("C-+" . ivy-call)
-    ("C-<" . ivy-avy)
-    ("C->" . ivy-dispatching-done)
-    ("C-[" . ivy-previous-history-element)
-    ("C-]" . ivy-next-history-element))
-  )
+  ("C-s" . swiper))
+   ;;("C-c C-r" . ivy-resume))
 
-;;; autopair
-(use-package autopair
-  :diminish autopair-mode
+;;; which-key
+;; show sub-keys after a second of an unfinished key-press
+(use-package which-key
+  :diminish which-key-mode
+  :defer t
+  :init
+  (which-key-mode))
+
+;;; avy
+(use-package avy
+  :diminish avy-mode
+  :defer t
   :config
-  (autopair-global-mode))
+  (setq avy-style 'at-full)
+  :bind
+  (("C-:" . avy-goto-char)
+   ("M-g w" . avy-goto-word-2)))
+
+;;; quickrun
+;; Execute editing buffer, run command quickly.
+(use-package quickrun
+  :defer t
+  :bind
+  (("<f5>" . quickrun)
+   ("C-<f5>" . quickrun-shell)))
 
 ;;; flycheck
 (use-package flycheck
-  :defer t
   :diminish flycheck-mode
+  :defer t
   :config
   (add-hook 'after-init-hook #'global-flycheck-mode)
   (add-hook 'c++-mode-hook (lambda () (setq flycheck-clang-language-standard "c++11")))
@@ -498,14 +427,14 @@
 
 ;;; auto-complete
 (use-package auto-complete
-  :defer t
   :diminish auto-complete-mode
+  :defer t
   :config
   (ac-config-default)
   (setq ac-dwim t)                     ;; tab-mode
   (setq ac-use-quick-help nil
         ; setq ac-quick-help-delay 1.0
-        ac-auto-start 2                ;; auto start to complete after input 3 char
+        ac-auto-start 3                ;; auto start to complete after input 3 char
         ac-auto-show-menu 0.5          ;; Show menu 0.8 second later
         ac-menu-height 12              ;; menu seted as 12 lines
         ac-use-menu-map t)             ;; use menu map
@@ -520,13 +449,12 @@
     ("C-p" . ac-previous)))
 
 ;;; yasnippet
-(use-package yasnippet
-  :diminish yasnippet-mode
-  :config
-  ; (yas-global-mode 1)
-  (yas-reload-all)
-  (add-hook 'prog-mode-hook #'yas-minor-mode))
-
+; (use-package yasnippet
+;   :diminish yasnippet-mode
+;   :config
+;   ; (yas-global-mode 1)
+;   (yas-reload-all)
+;   (add-hook 'prog-mode-hook #'yas-minor-mode))
 
 ;;; multiple-cursors
 (use-package multiple-cursors
@@ -558,21 +486,29 @@
   :bind
   ("<f6>" . sr-speedbar-toggle))
 
+;;; volatile-highlights
+;; minor mode for visual feedback on some operations.
+(use-package volatile-highlights
+  :diminish volatile-highlights-mode
+  :defer t
+  :config
+  (volatile-highlights-mode t))
+
 ;;; highlight-symbol
 (use-package highlight-symbol
   :diminish highlight-symbol-mode
+  :defer t
   :bind
   (("C-<f3>" . highlight-symbol)
    ("<f3>" . highlight-symbol-next)
    ("S-<f3>" . highlight-symbol-prev)
    ("M-<f3>" . highlight-symbol-query-replace)))
 
-;;; which-key
-;; show sub-keys after a second of an unfinished key-press
-(use-package which-key
-  :diminish which-key-mode
-  :init
-  (which-key-mode))
+;;; indent-guide
+(use-package indent-guide
+  :diminish indent-guide-mode
+  :config
+  (indent-guide-global-mode))
 
 ;;; undo-tree
 ;; Tips for uesage: C-x u - undo-tree-visualizer-mode; p/n - move up/down;
@@ -582,24 +518,11 @@
   :config
   (global-undo-tree-mode 1))
 
-;;; indent-guide
-(use-package indent-guide
-  :diminish indent-guide-mode
-  :config
-  (indent-guide-global-mode))
-
-;;; volatile-highlights
-;; minor mode for visual feedback on some operations.
-(use-package volatile-highlights
-  :diminish volatile-highlights-mode
-  :config
-  (volatile-highlights-mode t))
-
 ;;; anzu
 ;; displays current match and total matches information in the mode-line in various search modes.
 (use-package anzu
-  :defer t
   :diminish anzu-mode
+  :defer t
   :config
   (global-anzu-mode +1)
   (progn
@@ -613,18 +536,11 @@
   (("M-%" . anzu-query-replace)
    ("C-M-%" . anzu-query-replace-regexp)))
 
-;;; browse-kill-ring
-;; interactively insert items from kill-ring.
-(use-package browse-kill-ring
-  :diminish browse-kill-ring-mode
-  :config
-  (browse-kill-ring-default-keybindings)
-  (setq browse-kill-ring-quit-action 'save-and-restore))
-
 ;;; benchmark-init
 ;; keep track of where time is being spent during Emacs startup.
 (use-package benchmark-init
   :diminish benchmark-init-mode
+  :defer t
   :config
   (benchmark-init/activate))
 
@@ -633,8 +549,8 @@
 ;; => Special Mode
 ;; ------------------------------------------------------------------
 
-;; ------------------------------------------------------------------
 ;;; org-mode
+;; ------------------------------------------------------------------
 (use-package org
   :defer t
   :config
@@ -649,8 +565,8 @@
    ("\C-ca" . org-agenda)
    ("\C-cb" . org-iswitchb)))
 
-;; ------------------------------------------------------------------
 ;;; markdown-mode
+;; ------------------------------------------------------------------
 (use-package markdown-mode
   :ensure t
   :commands (markdown-mode gfm-mode)
@@ -664,9 +580,10 @@
 ;   :config
 ;   (add-hook 'markdown-mode-hook 'pandoc-mode))
 
-;; ------------------------------------------------------------------
 ;;; python
+;; ------------------------------------------------------------------
 ;; The package is "python" but the mode is "python-mode":
+;; install the required Python packages: pip install flake8 importmagic autopep8
 (use-package python
   :defer t
   :mode
@@ -694,8 +611,8 @@
   (add-hook 'python-mode-hook 'pylint-add-menu-items)
   (add-hook 'python-mode-hook 'pylint-add-key-bindings))
 
-;; ------------------------------------------------------------------
 ;;; go-mode
+;; ------------------------------------------------------------------
 (use-package go-mode
   :defer t
   :config
@@ -703,22 +620,8 @@
   (require 'go-autocomplete)
   (add-hook 'before-save-hook #'gofmt-before-save))
 
-;; ------------------------------------------------------------------
-;;; CMake
-(use-package cmake-mode
-  :ensure nil
-  :defer t
-  :config
-  ;; Add cmake listfile names to the mode list.
-  (setq auto-mode-alist
-    (append
-      '(("CMakeLists\\.txt\\'" . cmake-mode))
-      '(("\\.cmake\\'" . cmake-mode))
-      auto-mode-alist)))
-
-;; ------------------------------------------------------------------
 ;;; C++ Mode
-
+;; ------------------------------------------------------------------
 (setq compilation-ask-about-save nil)  ;; don't ask me to save _all_ buffers
 (setq compilation-scroll-output 'first-error)  ;; Stop on the first error
 (setq compilation-skip-threshold 2)  ;; Don't stop on info or warnings
@@ -789,8 +692,8 @@
 (add-hook 'c-mode-common-hook
   (lambda() (local-set-key  (kbd "C-c o") 'ff-find-other-file)))
 
-;; ------------------------------------------------------------------
 ;;; Ediff Mode
+;; ------------------------------------------------------------------
 ;; To people unfamiliar with ediff, the functions to try are:
 ;; ediff-current-file (see changes between current modified file and its saved version),
 ;; ediff-buffers (diff two different buffers),
@@ -813,7 +716,6 @@
   "To open the init.el file."
   (interactive)
   (find-file "~/.emacs.d/init.el"))
-; (global-set-key (kbd "<C-f12>") 'me/open-init-file)
 
 (defun me/copy-buffer-file-path ()
   "Put current buffer's short path into the kill ring."
@@ -891,45 +793,7 @@
       ))))
 (advice-add #'linum-update-window :after #'me/linum-update-window-scale-fix)
 
-;; 2.Linum: select lines by clicking
-(defvar *linum-mdown-line* nil)
-
-(defun me/line-at-click ()
-  (save-excursion
-    (let ((click-y (cdr (cdr (mouse-position))))
-      (line-move-visual-store line-move-visual))
-      (setq line-move-visual t)
-      (goto-char (window-start))
-      (next-line (1- click-y))
-      (setq line-move-visual line-move-visual-store)
-      ;; If you are using tabbar substitute the next line with
-      ;; (line-number-at-pos))))
-      (1+ (line-number-at-pos)))))
-
-(defun me/md-select-linum ()
-  (interactive)
-  (goto-line (me/line-at-click))
-  (set-mark (point))
-  (setq *linum-mdown-line*
-    (line-number-at-pos)))
-
-(defun me/mu-select-linum ()
-  (interactive)
-  (when *linum-mdown-line*
-    (let (mu-line)
-      ;; (goto-line (me/line-at-click))
-      (setq mu-line (me/line-at-click))
-      (goto-line (max *linum-mdown-line* mu-line))
-      (set-mark (line-end-position))
-      (goto-line (min *linum-mdown-line* mu-line))
-      (setq *linum-mdown*
-    nil))))
-
-(global-set-key (kbd "<left-margin> <down-mouse-1>") 'me/md-select-linum)
-(global-set-key (kbd "<left-margin> <mouse-1>") 'me/mu-select-linum)
-(global-set-key (kbd "<left-margin> <drag-mouse-1>") 'me/mu-select-linum)
-
-;; 3.Linum: highlight the current line number
+;; 2.Linum: highlight the current line number
 ; (require 'linum)
 (defvar linum-current-line 1 "Current line number.")
 (defvar linum-border-width 1 "Border width for linum.")
@@ -962,7 +826,7 @@
 
 (setq linum-format 'me/linum-highlight-current-line)
 
-;; 4.Linum: Separating line numbers from text
+;; 3.Linum: Separating line numbers from text
 (unless window-system
   (add-hook 'linum-before-numbering-hook
         (lambda ()
@@ -1301,10 +1165,8 @@
            (let* (
                   (w1 (elt (window-list) i))
                   (w2 (elt (window-list) (+ (% i numWindows) 1)))
-
                   (b1 (window-buffer w1))
                   (b2 (window-buffer w2))
-
                   (s1 (window-start w1))
                   (s2 (window-start w2))
                   )
@@ -1571,7 +1433,7 @@
 ;; A better C-h i is C-h C-i which has tab compleation on info sections
 (define-key 'help-command (kbd "C-i") 'info-display-manual)
 
-(global-set-key [f5] 'compile)              ;; compile
+(global-set-key (kbd "C-S-<f5>") 'compile)  ;; compile
 (global-set-key [f8] 'gdb)                  ;; start gdb
 (global-set-key [C-f8] 'gdb-many-windows)   ;; start multi-windows gdb
 
@@ -1595,5 +1457,5 @@
 ;; Message show the startup time
 (message (concat "Configuration file read to end!\n=> Emacs init time, "
   (substring (emacs-init-time) 0 10) "."))
-)
+
 ;;; init.el ends here
