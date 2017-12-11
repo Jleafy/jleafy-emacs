@@ -4,7 +4,7 @@
 ;; Date: 2017-11-25
 ;; Version: 0.2.3
 ;; From: http://home.thep.lu.se/~karlf/emacs.html
-;; Time-stamp: <Last changed 2017-11-25 12:46:54 by Jleafy, Jleafy>
+;; Time-stamp: <Last changed 2017-11-28 20:53:00 by Jleafy, Jleafy>
 
 ;;; Commentary:
 ;; Following lines load an Org file and build the configuration code out of it.
@@ -34,7 +34,7 @@
 
 ;; Theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
-; (load-theme 'atom-one-dark t)
+(load-theme 'atom-one-dark t)
 ; (load-theme 'molokai t)
 ;; dark theme: atom-one-dark, smyx, molokai, Amelie, dracula, idea-darkula, seti, subdued, twilight, tangotango, zenburn.
 ;; white theme: FlatUI, github, github-modern, material-light
