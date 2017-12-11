@@ -4,6 +4,10 @@ A simple Emacs configuration project.
 
 ### Features
 
+- Start time less than 1 second, light and handy;
+- Some tools make the Emacs more easy to be used;
+- Many self-defined functions;
+- several special mode.
 
 ### Installation
 
@@ -13,39 +17,39 @@ You can install jleafy-emacs via the command line:
 
 ### List of Used Tools
 
+#### Basic Packages
+
 - [**use-package**](https://github.com/jwiegley/use-package): Manage your packages and isolate package configuration.
 
-- [**smex**](https://github.com/nonsequitur/smex): A smart M-x enhancement for Emacs.
+- [**swiper**](https://github.com/abo-abo/swiper): Ivy - a generic completion frontend for Emacs, Swiper - isearch with an overview, and more.
 
-- [**ivy**](https://github.com/abo-abo/swiper): A generic completion frontend for Emacs, similar to ido or helm.
+- [**which-key**](https://github.com/justbur/emacs-which-key#which-key): Emacs package that displays available keybindings in popup.
 
-- [**autopair**](https://github.com/joaotavora/autopair): Automagically pair braces and quotes in emacs like TextMate.
+- [**avy**](https://github.com/abo-abo/avy): Jump to things in Emacs tree-style.
+
+- [**quickrun**](https://github.com/syohex/emacs-quickrun): Run command quickly, surport many kinds of languages.
 
 - [**flycheck**](https://github.com/flycheck/flycheck/): On the fly syntax checking for GNU Emacs.
 
 - [**auto-complete**](https://github.com/auto-complete/auto-complete): An Intelligent auto-completion extension for Emacs.
 
-- [**yasnippets**](https://github.com/joaotavora/yasnippet): A template system for Emacs, which allows you to type an abbreviation and automatically expand it into function templates.
-
 - [**multiple-cursors**](https://github.com/magnars/multiple-cursors.el): Multiple cursors for emacs.
 
 - [**sr-speedbar**](https://github.com/emacsmirror/emacswiki.org/blob/master/sr-speedbar.el): A mode that makes SpeedBar show in the Current Frame.
 
+- [**volatile-highlights**](https://github.com/k-talo/volatile-highlights.el): Minor mode for visual feedback on some operations in Emacs.
+
 - [**highlight-symbol**](https://github.com/nschum/highlight-symbol.el): Automatic and manual symbol highlighting for Emacs.
-
-- [**which-key**](https://github.com/justbur/emacs-which-key#which-key): Emacs package that displays available keybindings in popup.
-
-- [**undo-tree**](https://github.com/emacsmirror/undo-tree): Treat undo history as a tree.
 
 - [**indent-guide**](https://github.com/zk-phi/indent-guide): Show vertical lines to guide indentation.
 
-- [**volatile-highlights**](https://github.com/k-talo/volatile-highlights.el): Minor mode for visual feedback on some operations in Emacs.
+- [**undo-tree**](https://github.com/emacsmirror/undo-tree): Treat undo history as a tree.
 
 - [**anzu**](https://github.com/syohex/emacs-anzu): Provides a minor mode which displays current match and total matches information in the mode-line in various search modes.
 
-- [**browse-kill-ring**](https://github.com/browse-kill-ring/browse-kill-ring): For when 'C-y M-y M-y M-y' gets you down, interactively insert items from kill-ring.
-
 - [**benchmark-init**](https://github.com/dholm/benchmark-init-el): Benchmark your Emacs initialization, which can be used to keep track of where time is being spent during Emacs startup in order to optimize startup times.
+
+#### Special Mode
 
 - [**markdown-mode**](https://github.com/defunkt/markdown-mode): A major mode for editing Markdown-formatted text.
 
@@ -53,7 +57,17 @@ You can install jleafy-emacs via the command line:
 
 - [**go-mode**](https://github.com/dominikh/go-mode.el): Emacs mode for the Go programming language.
 
+#### Some other usefull packages(not used)
+
+- [**smex**](https://github.com/nonsequitur/smex): A smart M-x enhancement for Emacs.
+
+- [**ivy**](https://github.com/abo-abo/swiper): A generic completion frontend for Emacs, similar to ido or helm.
+
+- [**yasnippets**](https://github.com/joaotavora/yasnippet): A template system for Emacs, which allows you to type an abbreviation and automatically expand it into function templates.
+
 - [**auctex**](http://www.gnu.org/software/auctex/): AUCTEX is an extensible package for writing and formatting TEX files in GNU Emacs and XEmacs.
+
+- [**expand-region**](https://github.com/magnars/expand-region.el): Emacs extension to increase selected region by semantic units.
 
 ### Tips
 
@@ -64,10 +78,10 @@ You can install jleafy-emacs via the command line:
 Keybinding             | Description
 -----------------------|------------------------------------------------------------
 <kbd>M-/</kbd>         | Run `hippie-expand` (a replacement for the default `dabbrev-expand`).
-<kbd>C-c C-t</kbd>     | Insert current time (`me/time-current`).
-<kbd>C-c C-d</kbd>     | Insert current date (`me/date-current`).
+<kbd>C-c C-t</kbd>     | `me/insert-current-time`
+<kbd>C-c C-d</kbd>     | `me/insert-current-date`
 <kbd>C-F1</kbd>        | Lookup word online (`me/lookup-word-definition`).
-<kbd>C-M-F3</kbd>      | Multi occur, just like `M-s o` (`me/multi-occur-in-this-mode`).
+<kbd>C-M-F3</kbd>      | Multi occur, just like M-s o (`me/multi-occur-in-this-mode`).
 <kbd>M-[</kbd>         | Unindent region (`me/untab-region`).
 <kbd>M-]</kbd>         | Indent region (`me/tab-region`).
 <kbd>M-;</kbd>         | Comment Enhanced (`me/enhance-comment-dwim-line`).
@@ -84,7 +98,7 @@ Keybinding             | Description
 <kbd>S-Mouse1</kbd>    | Enable Emacs column selection using mouse (`me/mouse-start-rectangle`).
 <kbd>C-^</kbd>         | Join two lines into one (with the next line).
 <kbd>M-Up/Down</kbd>   | Scroll a line up/down every time.
-<kbd>F5</kbd>          | Start compile (`compile`).
+<kbd>C-S-F5</kbd>      | Start compile (`compile`).
 <kbd>F8</kbd>          | Start gdb (`gdb`).
 <kbd>C-F8</kbd>        | Start multi-windows gdb (`gdb-many-windows`).
 <kbd>C-h C-i</kbd>     | A better C-h i (`info-display-manual`).
@@ -100,8 +114,11 @@ Keybinding             | Description
 
 Keybinding             | Description
 -----------------------|------------------------------------------------------------
-<kbd>C-x C-j</kbd>     | dires-x (`dired-jump`).
-<kbd>C-c C-r</kbd>     | recentf (`recentf-open-files`).
+<kbd>C-s</kbd>         | swiper (`swiper`).
+<kbd>C-:</kbd>         | avy (`avy-goto-char`).
+<kbd>M-g w</kbd>       | avy (`avy-goto-word-2`).
+<kbd>F5</kbd>          | quickrun (`quickrun`).
+<kbd>C-F5</kbd>        | quickrun (`quickrun-shell`).
 <kbd>C-Tab</kbd>       | auto-complete (`auto-complete`).
 <kbd>F6</kbd>          | sr-speedbar (`sr-speedbar-toggle`).
 <kbd>C-S-d</kbd>       | multiple-cursors (`mc/mark-next-like-this-word`).
@@ -111,7 +128,7 @@ Keybinding             | Description
 <kbd>C-c m c</kbd>     | multiple-cursors (`mc/edit-lines`).
 <kbd>C-c m a</kbd>     | multiple-cursors (`mc/edit-beginnings-of-lines`).
 <kbd>C-c m e</kbd>     | multiple-cursors (`mc/edit-ends-of-lines`).
-<kbd>M-Mouse1</kbd>    | multiple-cursors (`mc/add-cursor-on-click`).
+<kbd>C-M-Mouse1</kbd>  | multiple-cursors (`mc/add-cursor-on-click`).
 <kbd>C-F3</kbd>        | highlight-symbol (`highlight-symbol`).
 <kbd>F3</kbd>          | highlight-symbol (`highlight-symbol-next`).
 <kbd>S-F3</kbd>        | highlight-symbol (`highlight-symbol-prev`).
@@ -122,5 +139,6 @@ Keybinding             | Description
 <kbd>C-c c</kbd>       | org-mode (`org-capture`).
 <kbd>C-c a</kbd>       | org-mode (`org-agenda`).
 <kbd>C-c b</kbd>       | org-mode (`org-iswitchb`).
+
 
 ### Report bug
