@@ -52,7 +52,7 @@
 (setq command-line-default-directory "~/Desktop/")
 
 ;; load file and path
-; (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
+(add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
 
 ;; keep emacs Custom-settings in separate file
 (setq custom-file (expand-file-name ".custom.el" user-emacs-directory))
@@ -156,8 +156,9 @@
 (setq initial-scratch-message "")  ;; Empty the initial *scratch* buffer
 
 ;;; Indent and Tab
-(setq-default indent-tabs-mode nil)  ;; make indentation commands use space only (never tab character)
-(setq tab-width 4)  ;; set current buffer's tab char's display width to 4 spaces
+(setq indent-tabs-mode nil)  ;; make indentation commands use space only (never tab character)
+(setq default-tab-width 4)  ;; set current buffer's tab char's display width to 4 spaces
+(setq tab-width 4)
 
 ;;; Whitespaces
 (setq-default show-trailing-whitespace t)  ;; Display trailing whitespaces
@@ -1211,7 +1212,23 @@
 ;; If nothing is marked/highlighted, and you copy or cut
 ;; (C-w or M-w) then use column 1 to end. No need to "C-a C-k" or "C-a C-w" etc.
 
-(defadvice kill-region (before slick-cut activate compile)
+;; (defadvice kill-region (before slick-cut activate compile)
+;;   "When called interactively with no active region, kill a single line instead."
+;;   (interactive
+;;    (if mark-active
+;;        (list (region-beginning) (region-end))
+;;      (message "Killed line")
+;;      (list (line-beginning-position) (line-beginning-position 2)))))
+
+;; (defadvice kill-ring-save (before slick-copy activate compile)
+;;   "When called interactively with no active region, copy a single line instead."
+;;   (interactive
+;;    (if mark-active
+;;        (list (region-beginning) (region-end))
+;;      (message "Copied line")
+;;      (list (line-beginning-position) (line-beginning-position 2)))))
+
+(defun slick-cut (beg end)
   "When called interactively with no active region, kill a single line instead."
   (interactive
    (if mark-active
@@ -1219,7 +1236,9 @@
      (message "Killed line")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-(defadvice kill-ring-save (before slick-copy activate compile)
+(advice-add 'kill-region :before #'slick-cut)
+
+(defun slick-copy (beg end)
   "When called interactively with no active region, copy a single line instead."
   (interactive
    (if mark-active
@@ -1227,25 +1246,7 @@
      (message "Copied line")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-; (defun slick-cut (beg end)
-;   "When called interactively with no active region, kill a single line instead."
-;   (interactive
-;    (if mark-active
-;        (list (region-beginning) (region-end))
-;      (message "Killed line")
-;      (list (line-beginning-position) (line-beginning-position 2)))))
-
-; (advice-add 'kill-region :before #'slick-cut)
-
-; (defun slick-copy (beg end)
-;   "When called interactively with no active region, copy a single line instead."
-;   (interactive
-;    (if mark-active
-;        (list (region-beginning) (region-end))
-;      (message "Copied line")
-;      (list (line-beginning-position) (line-beginning-position 2)))))
-
-; (advice-add 'kill-ring-save :before #'slick-copy)
+(advice-add 'kill-ring-save :before #'slick-copy)
 ;; ------------------------------------------------------------------
 
 ;; Search what is selected
