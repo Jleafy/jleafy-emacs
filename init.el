@@ -1212,23 +1212,7 @@
 ;; If nothing is marked/highlighted, and you copy or cut
 ;; (C-w or M-w) then use column 1 to end. No need to "C-a C-k" or "C-a C-w" etc.
 
-;; (defadvice kill-region (before slick-cut activate compile)
-;;   "When called interactively with no active region, kill a single line instead."
-;;   (interactive
-;;    (if mark-active
-;;        (list (region-beginning) (region-end))
-;;      (message "Killed line")
-;;      (list (line-beginning-position) (line-beginning-position 2)))))
-
-;; (defadvice kill-ring-save (before slick-copy activate compile)
-;;   "When called interactively with no active region, copy a single line instead."
-;;   (interactive
-;;    (if mark-active
-;;        (list (region-beginning) (region-end))
-;;      (message "Copied line")
-;;      (list (line-beginning-position) (line-beginning-position 2)))))
-
-(defun slick-cut (beg end)
+(defadvice kill-region (before slick-cut activate compile)
   "When called interactively with no active region, kill a single line instead."
   (interactive
    (if mark-active
@@ -1236,9 +1220,7 @@
      (message "Killed line")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-(advice-add 'kill-region :before #'slick-cut)
-
-(defun slick-copy (beg end)
+(defadvice kill-ring-save (before slick-copy activate compile)
   "When called interactively with no active region, copy a single line instead."
   (interactive
    (if mark-active
@@ -1246,7 +1228,25 @@
      (message "Copied line")
      (list (line-beginning-position) (line-beginning-position 2)))))
 
-(advice-add 'kill-ring-save :before #'slick-copy)
+;; (defun slick-cut (beg end)
+;;   "When called interactively with no active region, kill a single line instead."
+;;   (interactive
+;;    (if mark-active
+;;        (list (region-beginning) (region-end))
+;;      (message "Killed line")
+;;      (list (line-beginning-position) (line-beginning-position 2)))))
+
+;; (advice-add 'kill-region :before #'slick-cut)
+
+;; (defun slick-copy (beg end)
+;;   "When called interactively with no active region, copy a single line instead."
+;;   (interactive
+;;    (if mark-active
+;;        (list (region-beginning) (region-end))
+;;      (message "Copied line")
+;;      (list (line-beginning-position) (line-beginning-position 2)))))
+
+;; (advice-add 'kill-ring-save :before #'slick-copy)
 ;; ------------------------------------------------------------------
 
 ;; Search what is selected
