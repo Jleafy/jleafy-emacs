@@ -1,7 +1,7 @@
 ;;; init.el --- My Emacs configuration
 
 ;; Author: Jleafy
-;; Date: 2017-11-25
+;; Date: 2018-04-06
 ;; Version: 0.2.3
 ;; From: http://home.thep.lu.se/~karlf/emacs.html
 ;; Time-stamp: <Last changed 2017-11-28 20:53:00 by Jleafy, Jleafy>
@@ -35,9 +35,8 @@
 
 ;; Theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
-(load-theme 'atom-one-dark t)
-; (load-theme 'subdued t)
-;; dark theme: atom-one-dark, subdued, smyx, molokai, Amelie, dracula, idea-darkula, seti, twilight, tangotango, zenburn.
+(load-theme 'monokai t)
+;; dark theme: monokai, molokai, material, subdued, atom-one-dark, smyx, Amelie, dracula, idea-darkula, seti, twilight, tangotango, zenburn.
 ;; white theme: FlatUI, github, github-modern, material-light
 
 
@@ -1457,7 +1456,7 @@
 
 ;; ------------------------------------------------------------------
 ;; Message show the startup time
-(message "Configuration file read to end!")
+; (message "Configuration file read to end!")
 ; (message (concat "# Emacs init time, " (substring (emacs-init-time) 0 10) "."))
 
 ;;; init.el ends here
