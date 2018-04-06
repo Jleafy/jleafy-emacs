@@ -11,9 +11,9 @@ A simple Emacs configuration project.
 
 ### Installation
 
-You can install jleafy-emacs via the command line:
-> cd ~
-> git clone http://github.com/Jleafy/jleafy-emacs.git .emacs.d
+You can install jleafy-emacs via the command line (root):
+
+> git clone http://github.com/Jleafy/jleafy-emacs.git ~/.emacs.d
 
 ### List of Used Tools
 
