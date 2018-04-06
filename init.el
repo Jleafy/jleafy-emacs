@@ -12,12 +12,13 @@
 ;;; Code:
 
 
-(message "Reading configuration file ...")
+(message "Reading configuration file.")
 
 ;; ------------------------------------------------------------------
 ;; => Basic UI
 ;; ------------------------------------------------------------------
 ;; Disable menu bars, etc.
+(menu-bar-mode -1)
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
 (tooltip-mode 0)
@@ -35,8 +36,8 @@
 ;; Theme
 (add-to-list 'custom-theme-load-path "~/.emacs.d/lisp/themes")
 (load-theme 'atom-one-dark t)
-; (load-theme 'molokai t)
-;; dark theme: atom-one-dark, smyx, molokai, Amelie, dracula, idea-darkula, seti, subdued, twilight, tangotango, zenburn.
+; (load-theme 'subdued t)
+;; dark theme: atom-one-dark, subdued, smyx, molokai, Amelie, dracula, idea-darkula, seti, twilight, tangotango, zenburn.
 ;; white theme: FlatUI, github, github-modern, material-light
 
 
@@ -44,12 +45,12 @@
 ;; => User Info and Path
 ;; ------------------------------------------------------------------
 ;; user info
-(setq user-full-name "Jleafy")
-(setq user-mail-address "jleafy@163.com")
+(setq user-full-name "tmp")
+(setq user-mail-address "tmp@mail.com")
 
 ;; change default directory
-(setq default-directory "~/Desktop/")
-(setq command-line-default-directory "~/Desktop/")
+(setq default-directory "~")
+(setq command-line-default-directory "~")
 
 ;; load file and path
 (add-to-list 'load-path (expand-file-name "lisp" user-emacs-directory))
@@ -161,7 +162,7 @@
 (setq tab-width 4)
 
 ;;; Whitespaces
-(setq-default show-trailing-whitespace t)  ;; Display trailing whitespaces
+; (setq-default show-trailing-whitespace t)  ;; Display trailing whitespaces
 (setq-default whitespace-style '(empty tab trailing))
 (add-hook 'before-save-hook 'whitespace-cleanup)
 
@@ -200,13 +201,13 @@
 ;; C-x r m ('make'): create a new bookmark,
 ;; C-x r b ('bookmark'): jump to an existing bookmark,
 ;; C-x r l ('list'): see the list of your bookmarks.
-(setq bookmark-save-flag 1)  ;; auto save changes
-(setq bookmark-default-file (expand-file-name "tmp/.bookmarks" user-emacs-directory))
+; (setq bookmark-save-flag 1)  ;; auto save changes
+; (setq bookmark-default-file (expand-file-name "tmp/.bookmarks" user-emacs-directory))
 
 ;;; Save mode-line History
-(savehist-mode t)
-(setq savehist-additional-variables '(search-ring regexp-search-ring))
-(setq savehist-file (expand-file-name "tmp/.savehist" user-emacs-directory))
+; (savehist-mode t)
+; (setq savehist-additional-variables '(search-ring regexp-search-ring))
+; (setq savehist-file (expand-file-name "tmp/.savehist" user-emacs-directory))
 
 ;;; Saveplace
 ;; Save point position you previously visited.
@@ -267,8 +268,8 @@
 ;; Enable use-package
 (eval-when-compile (require 'use-package))
 ; (require 'use-package)
-(require 'diminish)  ;; if you use :diminish
-(require 'bind-key)  ;; if you use any :bind variant
+; (require 'diminish)  ;; if you use :diminish
+; (require 'bind-key)  ;; if you use any :bind variant
 
 (setq-default
   ; use-package-always-defer t
@@ -1456,7 +1457,7 @@
 
 ;; ------------------------------------------------------------------
 ;; Message show the startup time
-(message (concat "Configuration file read to end!\n=> Emacs init time, "
-  (substring (emacs-init-time) 0 10) "."))
+(message "Configuration file read to end!")
+; (message (concat "# Emacs init time, " (substring (emacs-init-time) 0 10) "."))
 
 ;;; init.el ends here
